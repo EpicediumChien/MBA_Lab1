@@ -1,0 +1,5 @@
+# rebuild *.dll every time
+.vs/
+x64/
+bin/
+obj/
