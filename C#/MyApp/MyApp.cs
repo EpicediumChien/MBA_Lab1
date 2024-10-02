@@ -9,8 +9,7 @@ namespace MyWPFApp
 {
     public class MyDLL
     {
-        //..\\..\\..\\..\\..\\C++\\x64\\Debug\\MyDLL.dll
-        // D:\MBA\Lab1\MBA_Lab1\C++\x64\Debug
+        // Build C++ First
         [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode, EntryPoint = "Add")]
         public extern static int Add(int a, int b);
 

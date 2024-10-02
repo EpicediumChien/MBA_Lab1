@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MyWPFApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="252" Width="484">
+        Title="MainWindow" Height="252" Width="484"
+        ResizeMode="NoResize"
+        >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
