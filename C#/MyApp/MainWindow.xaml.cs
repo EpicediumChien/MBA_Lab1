@@ -16,13 +16,17 @@ namespace MyWPFApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        public static extern bool AllocConsole();
+
         public MainWindow()
         {
             InitializeComponent();
+            AllocConsole();
         }
-
         private void Button_ClickAdd(object sender, RoutedEventArgs e)
         {
+            //Console.WriteLine("Test");
             lbResult.Content = MyDLL.Add(int.Parse(tbInput_A.Text), int.Parse(tbInput_B.Text)).ToString();
         }
 
