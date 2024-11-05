@@ -54,6 +54,8 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getChannels() const; 
+
+    void applyGaussianBlur(int kernelSize, double sigma); // New function
 };
 
 #endif

@@ -1,7 +1,14 @@
 #include "NImage.h"
+#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 NImage::NImage() : width(0), height(0), channels(0), data(NULL), palette(NULL) {}
 
@@ -142,4 +149,74 @@ bool NImage::saveImage(const char* filename) {
 
     file.close();
     return true;
+}
+
+void NImage::applyGaussianBlur(int kernelSize, double sigma) {
+    ApplyGaussianBlur(data, width, height, channels, kernelSize, sigma);
+}
+
+// Generate a Gaussian kernel in pure C
+float* generateGaussianKernel(int kernelSize, double sigma) {
+    float* kernel = (float*)malloc(kernelSize * sizeof(float));
+    int halfSize = kernelSize / 2;
+    float sum = 0.0f;
+
+    for (int i = -halfSize; i <= halfSize; ++i) {
+        float value = exp(-(i * i) / (2 * sigma * sigma)) / (sqrt(2 * M_PI) * sigma);
+        kernel[i + halfSize] = value;
+        sum += value;
+    }
+
+    // Normalize the kernel
+    for (int i = 0; i < kernelSize; ++i) {
+        kernel[i] /= sum;
+    }
+
+    return kernel;
+}
+
+// Apply a 1D Gaussian blur along one dimension
+void applyGaussianBlur1D(unsigned char* data, int width, int height, int channels, float* kernel, int kernelSize, int horizontal) {
+    int halfSize = kernelSize / 2;
+    unsigned char* tempData = (unsigned char*)malloc(width * height * channels * sizeof(unsigned char));
+
+    // Process each pixel
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            for (int c = 0; c < channels; ++c) {
+                float sum = 0.0f;
+
+                // Apply the kernel
+                for (int k = -halfSize; k <= halfSize; ++k) {
+                    int xk = horizontal ? x + k : x;
+                    int yk = horizontal ? y : y + k;
+
+                    // Reflect edges
+                    xk = xk < 0 ? -xk : (xk >= width ? 2 * width - xk - 2 : xk);
+                    yk = yk < 0 ? -yk : (yk >= height ? 2 * height - yk - 2 : yk);
+
+                    sum += data[(yk * width + xk) * channels + c] * kernel[k + halfSize];
+                }
+
+                tempData[(y * width + x) * channels + c] = (unsigned char)sum;
+            }
+        }
+    }
+
+    // Copy the blurred data back and free tempData
+    memcpy(data, tempData, width * height * channels);
+    free(tempData);
+}
+
+// Main function to apply Gaussian blur
+void ApplyGaussianBlur(unsigned char* data, int width, int height, int channels, int kernelSize, double sigma) {
+    // Generate the Gaussian kernel
+    float* kernel = generateGaussianKernel(kernelSize, sigma);
+
+    // Apply Gaussian blur in horizontal and then vertical direction
+    applyGaussianBlur1D(data, width, height, channels, kernel, kernelSize, 1);  // Horizontal pass
+    applyGaussianBlur1D(data, width, height, channels, kernel, kernelSize, 0); // Vertical pass
+
+    // Free the kernel memory
+    free(kernel);
 }

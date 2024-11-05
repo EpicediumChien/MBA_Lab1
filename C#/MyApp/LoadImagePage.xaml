@@ -8,8 +8,10 @@
         Title="LoadImagePage" Height="450" Width="800">
     <Grid>
         <Image x:Name="LoadedImage" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="40" />
-        <Button Click="OnClick_LoadImage" Content="Load Image" Height="30" Width="80" 
-                Margin="20"
-                VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right">
+            <Button Click="OnClick_LoadImage" Content="Load Image" Height="30" Width="80" Margin="20"/>
+            <Button Click="OnClick_Gaussian" Content="Gaussian Blur" Height="30" Width="80" Margin="20"/>
+            <Button Click="OnClick_Sobel" Content="Soble Filter" Height="30" Width="80" Margin="20"/>
+        </StackPanel>
     </Grid>
 </Window>

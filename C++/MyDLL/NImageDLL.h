@@ -25,6 +25,11 @@ extern "C" {
     DLL_EXPORT unsigned char* GetPalette(void* nimage);
 
     DLL_EXPORT bool SaveImage(void* nimage, const char* filename);
+
+    // New function to apply Gaussian blur
+    DLL_EXPORT void ApplyGaussianBlurImage(void* nimage, int kernelSize, double sigma) {
+        static_cast<NImage*>(nimage)->applyGaussianBlur(kernelSize, sigma);
+    }
 }
 
 #endif

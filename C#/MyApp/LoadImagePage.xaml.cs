@@ -21,27 +21,32 @@ namespace MyApp
     /// </summary>
     public partial class LoadImagePage : Window
     {
+        // Load the DLL functions
+        private const string DllName = $"MyDLL.dll";
         // Import DLL functions
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateNImage();
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void DeleteNImage(IntPtr nimage);
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern bool LoadImage(IntPtr nimage, string filename);
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetWidth(IntPtr nimage);
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetHeight(IntPtr nimage);
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetChannels(IntPtr nimage);
 
-        [DllImport("MyDLL.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetData(IntPtr nimage);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ApplyGaussianBlurImage(IntPtr nimage, int kernelSize, double sigma);
 
         private static string tempFilePath = string.Empty;
 
@@ -103,5 +108,9 @@ namespace MyApp
             DeleteNImage(nImagePtr); // Clean up
             #endregion
         }
+
+        private void OnClick_Gaussian(object sender, RoutedEventArgs e) { }
+
+        private void OnClick_Sobel(object sender, RoutedEventArgs e) { }
     }
 }

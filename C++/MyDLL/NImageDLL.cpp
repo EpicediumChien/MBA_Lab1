@@ -36,3 +36,22 @@ DLL_EXPORT unsigned char* GetPalette(void* nimage) {
 DLL_EXPORT bool SaveImage(void* nimage, const char* filename) {
     return static_cast<NImage*>(nimage)->saveImage(filename);
 }
+
+// This function exposes the Gaussian blur
+DLL_EXPORT bool ApplyGaussianBlurToImage(void* nimage, int kernelSize, double sigma) {
+    NImage* image = static_cast<NImage*>(nimage);
+    if (image == nullptr || image->getData() == nullptr) {
+        return false;  // Error: invalid image pointer or no image data
+    }
+
+    // Get image parameters
+    unsigned char* data = image->getData();
+    int width = image->getWidth();
+    int height = image->getHeight();
+    int channels = image->getChannels();
+
+    // Apply Gaussian blur
+    ApplyGaussianBlur(data, width, height, channels, kernelSize, sigma);
+
+    return true;  // Return success
+}
