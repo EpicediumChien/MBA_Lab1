@@ -1,5 +1,6 @@
 #include "NImageDLL.h"
 #include "NImage.h"
+#include <stdio.h>
 
 DLL_EXPORT void* CreateNImage() {
     return new NImage();
@@ -38,7 +39,35 @@ DLL_EXPORT bool SaveImage(void* nimage, const char* filename) {
 }
 
 // This function exposes the Gaussian blur
-DLL_EXPORT void ApplyGaussianBlurImage(void* nimage, int kernelSize, double sigma) {
+DLL_EXPORT unsigned char* ApplyGaussianBlurImage(void* nimage, int kernelSize, double sigma) {
     // Apply Gaussian blur by calling the applyGaussianBlur method on the NImage instance
-    static_cast<NImage*>(nimage)->applyGaussianBlur(kernelSize, sigma);
+    return static_cast<NImage*>(nimage)->applyGaussianBlur(kernelSize, sigma);
+}
+
+DLL_EXPORT unsigned char* InverseImage(unsigned char* data, int width, int height, int channels) {
+    if (!data) {
+        // Handle the error if data is null
+        printf("Error: No image data to invert.\n");
+        return NULL;
+    }
+
+    // Calculate the total image size (width * height * channels)
+    int imageSize = width * height * channels;
+
+    // Invert each byte (255 - current value)
+    for (int i = 0; i < imageSize; ++i) {
+        data[i] = 255 - data[i];
+    }
+
+    // Return the pointer to the modified data
+    return data;
+}
+
+DLL_EXPORT unsigned char* AdaptiveThresholdImage(void* nimage) {
+    return static_cast<NImage*>(nimage)->adaptiveThresholding();
+}
+
+DLL_EXPORT unsigned char* RgbToGray8bit(void* nimage, int width, int height) {
+    // Cast the void pointer to NImage* and call the rgbToGray8bit function
+    return static_cast<NImage*>(nimage)->rgbToGray8bit(width, height);
 }

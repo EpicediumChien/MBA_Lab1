@@ -27,7 +27,13 @@ extern "C" {
     DLL_EXPORT bool SaveImage(void* nimage, const char* filename);
 
     // New function to apply Gaussian blur
-    DLL_EXPORT void ApplyGaussianBlurImage(void* nimage, int kernelSize, double sigma);
+    DLL_EXPORT unsigned char* ApplyGaussianBlurImage(void* nimage, int kernelSize, double sigma);
+
+    DLL_EXPORT unsigned char* InverseImage(unsigned char* data, int width, int height, int channels);
+
+    DLL_EXPORT unsigned char* AdaptiveThresholdImage(void* nimage);
+
+    DLL_EXPORT unsigned char* RgbToGray8bit(void* nimage, int width, int height);
 }
 
 #endif

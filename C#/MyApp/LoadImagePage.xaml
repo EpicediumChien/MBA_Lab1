@@ -5,13 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MyApp"
         mc:Ignorable="d"
-        Title="LoadImagePage" Height="450" Width="800">
+        Title="LoadImagePage">
     <Grid>
-        <Image x:Name="LoadedImage" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="40" />
+        <Image x:Name="LoadedImage" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="40" Stretch="None"/>
+        
         <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right">
-            <Button Click="OnClick_LoadImage" Content="Load Image" Height="30" Width="80" Margin="20"/>
-            <Button Click="OnClick_Gaussian" Content="Gaussian Blur" Height="30" Width="80" Margin="20"/>
-            <Button Click="OnClick_Sobel" Content="Soble Filter" Height="30" Width="80" Margin="20"/>
+            <Button Click="OnClick_LoadImage" Content="Load Image" Height="30" Width="80" Margin="10,20"/>
+            <Button Click="OnClick_Gaussian" Content="Gaussian Blur" Height="30" Width="80" Margin="10,20"/>
+            <Button Click="OnClick_Sobel" Content="Soble Filter" Height="30" Width="80" Margin="10,20"/>
+            <Button Click="OnClick_Inverse" Content="Inverse Color" Height="30" Width="80" Margin="10,20"/>
+            <Button Click="OnClick_AdaptiveThreshold" Content="Adaptive Thresholding" Height="30" Width="80" Margin="10,20"/>
+            <Button Click="OnClick_Ini" Content="ReadBack" Height="30" Width="80" Margin="10,20"/>
         </StackPanel>
     </Grid>
 </Window>

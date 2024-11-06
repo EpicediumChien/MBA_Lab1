@@ -30,6 +30,7 @@ typedef struct {
 } BMPInfoHeader;
 #pragma pack(pop)
 
+
 class NImage {
 private:
     int width;
@@ -55,7 +56,12 @@ public:
     int getHeight() const;
     int getChannels() const; 
 
-    void applyGaussianBlur(int kernelSize, double sigma); // New function
+    unsigned char* applyGaussianBlur(int kernelSize, double sigma); // New function
+
+    unsigned char* inverseImage(int width, int height, int channels) const;
+    unsigned char* adaptiveThresholding() const;
+
+    unsigned char* rgbToGray8bit(int width, int height) const;
 };
 
 #endif
