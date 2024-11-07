@@ -31,9 +31,9 @@ extern "C" {
 
     DLL_EXPORT unsigned char* InverseImage(unsigned char* data, int width, int height, int channels);
 
-    DLL_EXPORT unsigned char* AdaptiveThresholdImage(void* nimage);
+    DLL_EXPORT unsigned char* RgbToGray8bit(unsigned char* data, int width, int height);
 
-    DLL_EXPORT unsigned char* RgbToGray8bit(void* nimage, int width, int height);
+    DLL_EXPORT unsigned char* AdaptiveThresholdImage(unsigned char* data, int width, int height);
 }
 
 #endif

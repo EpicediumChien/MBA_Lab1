@@ -61,7 +61,7 @@ namespace MyApp
         public static extern IntPtr RgbToGray8bit(IntPtr nimage, int width, int height);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr AdaptiveThresholdImage(IntPtr nimage);
+        public static extern IntPtr AdaptiveThresholdImage(IntPtr nimage, int width, int height);
 
         private static string tempFilePath = string.Empty;
 
@@ -97,6 +97,7 @@ namespace MyApp
                 width = GetWidth(loadedImage);
                 height = GetHeight(loadedImage);
                 channels = GetChannels(loadedImage);
+                // Real width
                 stride = (width * channels + 3) & ~3;
                 loadedImageIntPtr = GetData(loadedImage);
                 ShowIntPtrOnImage(loadedImageIntPtr);
@@ -128,31 +129,15 @@ namespace MyApp
 
         private void OnClick_AdaptiveThreshold(object sender, RoutedEventArgs e)
         {
-            // Turn gray
             IntPtr dataPtr = RgbToGray8bit(loadedImageIntPtr, width, height);
-            if (dataPtr != IntPtr.Zero) {
-                IntPtr thresholdPtr = dataPtr; // AdaptiveThresholdImage(dataPtr);
+            channels = 1;
+            stride = (width * channels + 3) & ~3;
+            width = stride;
+            if (dataPtr != IntPtr.Zero)
+            {
+                IntPtr thresholdPtr = AdaptiveThresholdImage(dataPtr, width, height);
                 // Copy data to a managed array
-                byte[] imageData = new byte[width * height];
-                Marshal.Copy(thresholdPtr, imageData, 0, imageData.Length);
-
-                PixelFormat pixelFormat = PixelFormats.Bgr24;
-                if (channels == 1)
-                {
-                    pixelFormat = PixelFormats.Gray8;
-                }
-                // Create a BitmapSource from the loaded image data
-                BitmapSource bitmap = BitmapSource.Create(
-                    width,
-                    height,
-                    96, // DPI X
-                    96, // DPI Y
-                    pixelFormat, // Assuming 24-bit color
-                    null,
-                    imageData,
-                    width * channels);
-
-                LoadedImage.Source = bitmap; // Set to your Image control
+                ShowIntPtrOnImage(thresholdPtr);
             }
             else
             {
@@ -172,7 +157,7 @@ namespace MyApp
             }
         }
 
-        private void ShowIntPtrOnImage(IntPtr imgSource)
+        private void ShowIntPtrOnImage(IntPtr imgSource, bool? mirror = true)
         {
             // Copy data to a managed array
             byte[] imageData = new byte[stride * height];
@@ -191,18 +176,20 @@ namespace MyApp
             }
             Marshal.Copy(imgSource, imageData, 0, imageData.Length);
 
-            // Handle the case where the image is upside down (flip vertically)
-            if (height > 1)
+            if (mirror ?? false)
             {
-                int rowSize = stride;  // Number of bytes per row
-                byte[] flippedData = new byte[imageData.Length];
-                for (int y = 0; y < height; y++)
+                // Handle the case where the image is upside down (flip vertically)
+                if (height > 1)
                 {
-                    Array.Copy(imageData, y * rowSize, flippedData, (height - 1 - y) * rowSize, rowSize);
+                    int rowSize = stride;  // Number of bytes per row
+                    byte[] flippedData = new byte[imageData.Length];
+                    for (int y = 0; y < height; y++)
+                    {
+                        Array.Copy(imageData, y * rowSize, flippedData, (height - 1 - y) * rowSize, rowSize);
+                    }
+                    imageData = flippedData;  // Use the flipped data
                 }
-                imageData = flippedData;  // Use the flipped data
             }
-
 
             // Set the pixel format based on channels
             PixelFormat pixelFormat = PixelFormats.Bgr24;
@@ -225,33 +212,5 @@ namespace MyApp
             // Set the image to the Image control
             LoadedImage.Source = bitmap;
         }
-
-        //private IntPtr GetImagePointer(Image wpfImage)
-        //{
-        //    if (wpfImage.Source is BitmapSource bitmapSource)
-        //    {
-        //        // Define stride (bytes per row)
-        //        int stride = (bitmapSource.PixelWidth * bitmapSource.Format.BitsPerPixel + 7) / 8;
-        //        int size = stride * bitmapSource.PixelHeight;
-
-        //        // Allocate unmanaged memory
-        //        IntPtr ptr = Marshal.AllocHGlobal(size);
-
-        //        try
-        //        {
-        //            // Copy pixels to unmanaged memory
-        //            bitmapSource.CopyPixels(Int32Rect.Empty, ptr, size, stride);
-        //            return ptr; // Returns pointer to the unmanaged memory containing pixel data
-        //        }
-        //        catch
-        //        {
-        //            // Free memory in case of failure
-        //            Marshal.FreeHGlobal(ptr);
-        //            throw;
-        //        }
-        //    }
-
-        //    return IntPtr.Zero; // Return zero if image source is not a BitmapSource
-        //}
     }
 }
