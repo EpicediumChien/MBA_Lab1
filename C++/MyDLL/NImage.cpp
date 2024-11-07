@@ -10,6 +10,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+#define BMP_HEADER_SIZE 54
 
 
 // Generate a Gaussian kernel in pure C
@@ -96,43 +97,52 @@ bool NImage::readBMP(const char* filename) {
         return false;
     }
 
-    unsigned char header[54];
-    fread(header, sizeof(unsigned char), 54, file); // 讀取 BMP 標頭
+    unsigned char header[BMP_HEADER_SIZE];
+    fread(header, sizeof(unsigned char), BMP_HEADER_SIZE, file); // Read BMP header
 
+    // Read image dimensions and bits per pixel
     width = *(int*)&header[18];
     height = *(int*)&header[22];
     short bitsPerPixel = *(short*)&header[28];
 
     if (bitsPerPixel == 24) {
-        channels = 3; // 24 位元彩色影像
-        int padding = (4 - (width * channels) % 4) % 4;
+        channels = 3; // 24-bit color image
+        int padding = (4 - (width * channels) % 4) % 4; // Row padding
         int rowSize = width * channels + padding;
 
+        // Allocate memory for image data
         data = (unsigned char*)malloc(rowSize * height);
         if (!data) {
             fclose(file);
             return false;
         }
 
-        fread(data, sizeof(unsigned char), rowSize * height, file);
+        // Read pixel data
+        for (int y = height - 1; y >= 0; --y) { // Reverse reading order (bottom to top)
+            fread(data + y * rowSize, sizeof(unsigned char), rowSize, file);
+        }
     }
     else if (bitsPerPixel == 8) {
-        channels = 1; // 8 位元灰階影像
+        channels = 1; // 8-bit grayscale image
 
-        // 讀取調色盤
-        palette = (unsigned char*)malloc(256 * 4); // 每個調色盤條目有 4 個位元組 (B, G, R, 0)
+        // Read color palette (256 colors for 8-bit BMP)
+        palette = (unsigned char*)malloc(256 * 4); // 256 entries with 4 bytes each (B, G, R, 0)
         fread(palette, sizeof(unsigned char), 256 * 4, file);
 
-        int padding = (4 - (width * channels) % 4) % 4;
+        int padding = (4 - (width * channels) % 4) % 4; // Row padding
         int rowSize = width * channels + padding;
 
+        // Allocate memory for grayscale data
         data = (unsigned char*)malloc(rowSize * height);
         if (!data) {
             fclose(file);
             return false;
         }
 
-        fread(data, sizeof(unsigned char), rowSize * height, file);
+        // Read pixel data (reverse reading order for 8-bit grayscale)
+        for (int y = height - 1; y >= 0; --y) { // Reverse reading order (bottom to top)
+            fread(data + y * rowSize, sizeof(unsigned char), rowSize, file);
+        }
     }
     else {
         printf("Unsupported BMP format: %d bpp\n", bitsPerPixel);
