@@ -22,11 +22,13 @@
     <ClInclude Include="MyDLL.h" />
     <ClInclude Include="NImage.h" />
     <ClInclude Include="NImageDLL.h" />
+    <ClInclude Include="NImageProcess.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyDLL.cpp" />
     <ClCompile Include="NImage.cpp" />
     <ClCompile Include="NImageDLL.cpp" />
+    <ClCompile Include="NImageProcess.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
