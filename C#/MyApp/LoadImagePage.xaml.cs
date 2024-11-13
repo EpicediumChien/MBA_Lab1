@@ -34,34 +34,37 @@ namespace MyApp
         public static extern IntPtr CreateNImage();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void DeleteNImage(IntPtr nimage);
+        public static extern void DeleteNImage(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool LoadImage(IntPtr nimage, string filename);
+        public static extern bool LoadImage(IntPtr nImage, string filename);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetWidth(IntPtr nimage);
+        public static extern int GetWidth(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetHeight(IntPtr nimage);
+        public static extern int GetHeight(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetChannels(IntPtr nimage);
+        public static extern int GetChannels(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr GetData(IntPtr nimage);
+        public static extern IntPtr GetData(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ApplyGaussianBlurImage(IntPtr nimage, int kernelSize, double sigma);
+        public static extern IntPtr ApplyGaussianBlurImage(IntPtr nImage, int width, int height, int channels, int kernelSize, double sigma);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr InverseImage(IntPtr nimage, int width, int height, int channel);
+        public static extern IntPtr InverseImage(IntPtr nImage, int width, int height, int channel);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr RgbToGray8bit(IntPtr nimage, int width, int height);
+        public static extern IntPtr RgbToGray8bit(IntPtr nImage, int width, int height);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr AdaptiveThresholdImage(IntPtr nimage, int width, int height);
+        public static extern IntPtr AdaptiveThresholdImage(IntPtr nImage, int width, int height);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr SobelFilterImage(IntPtr nImage, int width, int height, int channel);
 
         private static string tempFilePath = string.Empty;
 
@@ -109,14 +112,39 @@ namespace MyApp
             #endregion
         }
 
-        private void OnClick_Gaussian(object sender, RoutedEventArgs e) { }
+        private void OnClick_Gaussian(object sender, RoutedEventArgs e) 
+        {
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+            IntPtr dataPtr = ApplyGaussianBlurImage(imagePtr, width, height, channels, 7, 1.0);
+            if (dataPtr != IntPtr.Zero)
+            {
+                ShowIntPtrOnImage(dataPtr);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+        }
 
-        private void OnClick_Sobel(object sender, RoutedEventArgs e) { }
+        private void OnClick_Sobel(object sender, RoutedEventArgs e) 
+        { 
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+            IntPtr dataPtr = SobelFilterImage(imagePtr, width, height, channels);
+            if (dataPtr != IntPtr.Zero)
+            {
+                ShowIntPtrOnImage(dataPtr);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+        }
 
         private void OnClick_Inverse(object sender, RoutedEventArgs e)
         {
-
-            IntPtr dataPtr = InverseImage(loadedImageIntPtr, width, height, channels);
+            // Copy the image from loaded ptr
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);//CopyImageToNewIntPtr(loadedImageIntPtr, stride * height);
+            IntPtr dataPtr = InverseImage(imagePtr, width, height, channels);
             if (dataPtr != IntPtr.Zero)
             {
                 ShowIntPtrOnImage(dataPtr);
@@ -129,7 +157,9 @@ namespace MyApp
 
         private void OnClick_AdaptiveThreshold(object sender, RoutedEventArgs e)
         {
-            IntPtr dataPtr = RgbToGray8bit(loadedImageIntPtr, width, height);
+            // Copy the image from loaded ptr
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);//CopyImageToNewIntPtr(loadedImageIntPtr, stride * height);
+            IntPtr dataPtr = RgbToGray8bit(imagePtr, width, height);
             channels = 1;
             stride = (width * channels + 3) & ~3;
             width = stride;
@@ -157,7 +187,7 @@ namespace MyApp
             }
         }
 
-        private void ShowIntPtrOnImage(IntPtr imgSource, bool? mirror = true)
+        private void ShowIntPtrOnImage(IntPtr imgSource)
         {
             // Copy data to a managed array
             byte[] imageData = new byte[stride * height];
@@ -175,21 +205,6 @@ namespace MyApp
                 return;
             }
             Marshal.Copy(imgSource, imageData, 0, imageData.Length);
-
-            if (mirror ?? false)
-            {
-                // Handle the case where the image is upside down (flip vertically)
-                if (height > 1)
-                {
-                    int rowSize = stride;  // Number of bytes per row
-                    byte[] flippedData = new byte[imageData.Length];
-                    for (int y = 0; y < height; y++)
-                    {
-                        Array.Copy(imageData, y * rowSize, flippedData, (height - 1 - y) * rowSize, rowSize);
-                    }
-                    imageData = flippedData;  // Use the flipped data
-                }
-            }
 
             // Set the pixel format based on channels
             PixelFormat pixelFormat = PixelFormats.Bgr24;
@@ -211,6 +226,51 @@ namespace MyApp
 
             // Set the image to the Image control
             LoadedImage.Source = bitmap;
+        }
+
+        public IntPtr CopyImageToNewIntPtr(IntPtr sourcePtr, int byteSize)
+        {
+            // Allocate a new block of memory with the specified byte size
+            IntPtr destinationPtr = Marshal.AllocHGlobal(byteSize);
+
+            try
+            {
+                // Copy data from sourcePtr to destinationPtr
+                byte[] buffer = new byte[byteSize];
+                Marshal.Copy(sourcePtr, buffer, 0, byteSize); // Copy data from sourcePtr to managed buffer
+                Marshal.Copy(buffer, 0, destinationPtr, byteSize); // Copy data from buffer to destinationPtr
+            }
+            catch
+            {
+                // Free the allocated memory in case of any errors
+                Marshal.FreeHGlobal(destinationPtr);
+                throw;
+            }
+
+            return destinationPtr; // Return the new pointer to the copied image data
+        }
+
+        public IntPtr GetIntPtrFromImageSource(ImageSource imageSource)
+        {
+            if (imageSource is BitmapSource bitmapSource)
+            {
+                // Convert to a WritableBitmap to access the BackBuffer
+                var writableBitmap = new WriteableBitmap(bitmapSource);
+
+                // Lock the WritableBitmap to access the BackBuffer
+                writableBitmap.Lock();
+
+                IntPtr ptr = writableBitmap.BackBuffer;
+
+                // Unlock after getting the pointer (keeps the image data in memory)
+                writableBitmap.Unlock();
+
+                return ptr;
+            }
+            else
+            {
+                throw new ArgumentException("ImageSource must be a BitmapSource to retrieve an IntPtr.");
+            }
         }
     }
 }

@@ -55,13 +55,9 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getChannels() const; 
-
-    unsigned char* applyGaussianBlur(int kernelSize, double sigma); // New function
-
-    unsigned char* inverseImage(int width, int height, int channels) const;
-    unsigned char* adaptiveThresholding() const;
-
-    unsigned char* rgbToGray8bit(int width, int height) const;
 };
 
+unsigned char* applyGaussianBlur(unsigned char* data, int width, int height, int channels, int kernelSize, double sigma); // New function
+unsigned char* applySobel8bit(unsigned char* data, int width, int height);
+unsigned char* applySobel24bit(unsigned char* data, int width, int height);
 #endif

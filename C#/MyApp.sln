@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp", "MyApp\MyApp.csproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyDLL", "..\C++\MyDLL\MyDLL.vcxproj", "{A3B61BAA-D965-4632-996F-311FA770368B}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Lab5_Python", "..\Python\Lab5_Python.pyproj", "{FC0D2216-CC82-4E07-B801-3BB445230817}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,12 @@ Global
 		{A3B61BAA-D965-4632-996F-311FA770368B}.Release|x64.Build.0 = Release|x64
 		{A3B61BAA-D965-4632-996F-311FA770368B}.Release|x86.ActiveCfg = Release|Win32
 		{A3B61BAA-D965-4632-996F-311FA770368B}.Release|x86.Build.0 = Release|Win32
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Release|x64.ActiveCfg = Release|Any CPU
+		{FC0D2216-CC82-4E07-B801-3BB445230817}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
