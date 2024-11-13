@@ -98,6 +98,7 @@ namespace MyApp
             {
                 // Only on load image
                 width = GetWidth(loadedImage);
+                width = width + (4 - (width * channels) % 4) % 4;
                 height = GetHeight(loadedImage);
                 channels = GetChannels(loadedImage);
                 // Real width
