@@ -59,6 +59,14 @@
                 HorizontalContentAlignment="Center" 
                 Grid.Column="1" 
                 Grid.Row="3"/>
+        <Button Name="NextLabButton" 
+                Click="SwitchPage" 
+                Content="NextLab" 
+                Height="30"
+                Width="80"
+                HorizontalContentAlignment="Center" 
+                Grid.Column="4" 
+                Grid.Row="3"/>
         <TextBox Name="tbInput_B"
                  Height="30" 
                  Width="90"
