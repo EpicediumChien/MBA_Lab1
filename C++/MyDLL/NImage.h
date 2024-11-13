@@ -56,8 +56,4 @@ public:
     int getHeight() const;
     int getChannels() const; 
 };
-
-unsigned char* applyGaussianBlur(unsigned char* data, int width, int height, int channels, int kernelSize, double sigma); // New function
-unsigned char* applySobel8bit(unsigned char* data, int width, int height);
-unsigned char* applySobel24bit(unsigned char* data, int width, int height);
 #endif
