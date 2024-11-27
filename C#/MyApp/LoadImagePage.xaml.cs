@@ -28,7 +28,7 @@ namespace MyApp
         int width, height, channels, stride;
         #endregion
         // Load the DLL functions
-        private const string DllName = $"MyDLL.dll";
+        private const string DllName = $"../../../../../MyDLL.dll";
         // Import DLL functions
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateNImage();
@@ -65,6 +65,9 @@ namespace MyApp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr SobelFilterImage(IntPtr nImage, int width, int height, int channel);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr MidtermGaussianBlurImage(IntPtr nImage, int width, int height, int channel);
 
         private static string tempFilePath = string.Empty;
 
@@ -188,6 +191,20 @@ namespace MyApp
             }
         }
 
+        public void OnClick_MidtermGaussian(object sender, EventArgs e)
+        {
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+            IntPtr dataPtr = MidtermGaussianBlurImage(imagePtr, width, height, channels);
+            if (dataPtr != IntPtr.Zero)
+            {
+                ShowIntPtrOnImage(dataPtr);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+        }
+
         private void ShowIntPtrOnImage(IntPtr imgSource)
         {
             // Copy data to a managed array
@@ -273,5 +290,6 @@ namespace MyApp
                 throw new ArgumentException("ImageSource must be a BitmapSource to retrieve an IntPtr.");
             }
         }
+
     }
 }
