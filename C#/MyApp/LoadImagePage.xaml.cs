@@ -69,6 +69,9 @@ namespace MyApp
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr MidtermGaussianBlurImage(IntPtr nImage, int width, int height, int channel);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr ApplyOtsuBinarization(IntPtr nImage, int width, int height, int channel);
+
         private static string tempFilePath = string.Empty;
 
         public LoadImagePage()
@@ -191,10 +194,24 @@ namespace MyApp
             }
         }
 
-        public void OnClick_MidtermGaussian(object sender, EventArgs e)
+        private void OnClick_MidtermGaussian(object sender, EventArgs e)
         {
             IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
             IntPtr dataPtr = MidtermGaussianBlurImage(imagePtr, width, height, channels);
+            if (dataPtr != IntPtr.Zero)
+            {
+                ShowIntPtrOnImage(dataPtr);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+        }
+
+        private void OnClick_Otsu(object sender, EventArgs e)
+        {
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+            IntPtr dataPtr = ApplyOtsuBinarization(imagePtr, width, height, channels);
             if (dataPtr != IntPtr.Zero)
             {
                 ShowIntPtrOnImage(dataPtr);

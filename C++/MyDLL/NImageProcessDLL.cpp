@@ -7,9 +7,16 @@
 
 #define OFFSET 2 // For a 5x5 kernel
 
+int kernel[5][5] = {
+    { 0,  0, -1,  0,  0},
+    { 0, -1, -2, -1,  0},
+    {-1, -2, 16, -2, -1},
+    { 0, -1, -2, -1,  0},
+    { 0,  0, -1,  0,  0}
+};
+
 // Convolution function for 8-bit grayscale image
-void applyKernelGrayscale(unsigned char* image, int width, int height, int kernel[5][5], unsigned char* output) {
-    // Loop through each pixel of the image
+void applyKernelGrayscale(unsigned char* image, int width, int height, unsigned char* output) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int sum = 0;
@@ -36,8 +43,7 @@ void applyKernelGrayscale(unsigned char* image, int width, int height, int kerne
 }
 
 // Convolution function for 24-bit RGB image
-void applyKernelRGB(unsigned char* image, int width, int height, int kernel[5][5], unsigned char* output) {
-    // Loop through each pixel of the image (processing each channel)
+void applyKernelRGB(unsigned char* image, int width, int height, unsigned char* output) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int r_sum = 0, g_sum = 0, b_sum = 0;
@@ -68,29 +74,18 @@ void applyKernelRGB(unsigned char* image, int width, int height, int kernel[5][5
     }
 }
 
-// Main function to apply Gaussian blur
-unsigned char* midtermGaussianBlur(unsigned char* data, int width, int height, int channels) {
-
-    int kernel[5][5] = {
-        { 0,  0, -1,  0,  0},
-        { 0, -1, -2, -1,  0},
-        {-1, -2, 16, -2, -1},
-        { 0, -1, -2, -1,  0},
-        { 0,  0, -1,  0,  0}
-    };
-
+// Function to apply Gaussian Blur using the LoG kernel to a bitmap image
+unsigned char* applyLaplacianGaussianBlur(unsigned char* image, int width, int height, int channels) {
+    width = width + 4 - width * channels % 4;
     unsigned char* output = (unsigned char*)malloc(width * height * channels * sizeof(unsigned char));
 
-
     if (channels == 1) {
-        width = width + 4 - width % 4;
-        // Apply kernel to the grayscale image
-        applyKernelGrayscale(data, width, height, kernel, output);
+        // Process as grayscale
+        applyKernelGrayscale(image, width, height, output);
     }
     else {
-        width = width + 4 - width * 3 % 4;
-        // Apply kernel to the RGB image
-        applyKernelRGB(data, width, height, kernel, output);
+        // Process as RGB
+        applyKernelRGB(image, width, height, output);
     }
 
     return output;
@@ -99,5 +94,10 @@ unsigned char* midtermGaussianBlur(unsigned char* data, int width, int height, i
 // This function exposes the Gaussian blur
 DLL_EXPORT unsigned char* MidtermGaussianBlurImage(unsigned char* data, int width, int height, int channels) {
     // Apply Gaussian blur by calling the applyGaussianBlur method on the NImage instance
-    return midtermGaussianBlur(data, width, height, channels);
+    return applyLaplacianGaussianBlur(data, width, height, channels);
+}
+
+// Free function (useful in C)
+DLL_EXPORT void FreeImage(unsigned char* image) {
+    free(image);
 }

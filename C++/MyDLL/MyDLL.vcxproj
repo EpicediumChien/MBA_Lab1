@@ -24,6 +24,7 @@
     <ClInclude Include="NImageDLL.h" />
     <ClInclude Include="NImageProcess.h" />
     <ClInclude Include="NImageProcessDLL.h" />
+    <ClInclude Include="NImgProcess.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyDLL.cpp" />
@@ -31,6 +32,7 @@
     <ClCompile Include="NImageDLL.cpp" />
     <ClCompile Include="NImageProcess.cpp" />
     <ClCompile Include="NImageProcessDLL.cpp" />
+    <ClCompile Include="NImgProcess.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -60,7 +62,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -85,6 +87,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\..</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\..</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

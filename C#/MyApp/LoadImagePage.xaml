@@ -20,6 +20,7 @@
             <Button Click="OnClick_LoadImage" Content="Load Image" />
             <Button Click="OnClick_Gaussian" Content="Gaussian Blur" />
             <Button Click="OnClick_MidtermGaussian" Content="Mid Gaussian Blur" />
+            <Button Click="OnClick_Otsu" Content="Mid Otsu" />
             <Button Click="OnClick_Sobel" Content="Soble Filter" />
             <Button Click="OnClick_Inverse" Content="Inverse Color" />
             <Button Click="OnClick_AdaptiveThreshold" Content="Adaptive Thresholding" />

@@ -1,8 +1,11 @@
 import ctypes
 from PIL import Image
-
+import numpy as np
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
 
 print("Hello Python!\n")
+
 # Load the DLL
 nimage_dll = ctypes.CDLL('../MyDLL.dll')
 
@@ -39,20 +42,20 @@ nimage_dll.SaveImage.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 nimage_dll.SaveImage.restype = ctypes.c_bool
 
 # Apply Gaussian blur
-nimage_dll.ApplyGaussianBlurImage.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_double]
+nimage_dll.MidtermGaussianBlurImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int]
+nimage_dll.MidtermGaussianBlurImage.restype = ctypes.POINTER(ctypes.c_ubyte)
+
+# Apply Gaussian blur
+nimage_dll.ApplyGaussianBlurImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_double]
 nimage_dll.ApplyGaussianBlurImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 
 # Invert image
 nimage_dll.InverseImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int]
 nimage_dll.InverseImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# Convert RGB image to grayscale
-nimage_dll.RgbToGray8bit.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
-nimage_dll.RgbToGray8bit.restype = ctypes.POINTER(ctypes.c_ubyte)
-
-# Apply adaptive thresholding
-nimage_dll.AdaptiveThresholdImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
-nimage_dll.AdaptiveThresholdImage.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Invert image
+nimage_dll.FreeImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte)]
+nimage_dll.FreeImage.restype = None
 
 # Create an image instance
 nimage_instance = nimage_dll.CreateNImage()
@@ -68,20 +71,35 @@ if nimage_dll.LoadImage(nimage_instance, filename):
     channels = nimage_dll.GetChannels(nimage_instance)
     print(f"Width: {width}, Height: {height}, Channels: {channels}")
 
-    # Apply Gaussian blur with kernel size 5 and sigma 1.0
-    blurred_data = nimage_dll.ApplyGaussianBlurImage(nimage_instance, width, height, channels, 7, 1.0)
+    # Get image data (raw byte array of the image)
+    image_data = nimage_dll.GetData(nimage_instance)
 
-    # Example to process `blurred_data` if needed
-    # Convert blurred_data to a byte array for further processing in Python
-    size = width * height * channels
-    blurred_array = ctypes.cast(blurred_data, ctypes.POINTER(ctypes.c_ubyte * size)).contents
+    # Apply the image inversion (or other processing)
+    processed_data = nimage_dll.MidtermGaussianBlurImage(image_data, width, height, channels)
 
-    # Save the blurred image
-    save_path = "../Imgs/sudoku_blur.bmp".encode('utf-8')
-    if nimage_dll.SaveImage(nimage_instance, save_path):
-        print("Blurred image saved successfully.")
-    else:
-        print("Failed to save blurred image.")
+    # Calculate row size with padding (must be a multiple of 4)
+    row_size_with_padding = width * channels + (4 - (width * channels) % 4)  # padded to 4-byte boundary
+    size_with_padding = row_size_with_padding * height
+
+    # Convert processed data to a numpy array
+    processed_array = ctypes.cast(processed_data, ctypes.POINTER(ctypes.c_ubyte * size_with_padding)).contents
+    processed_image_data = np.frombuffer(processed_array, dtype=np.uint8)
+
+    # Ensure correct shape for RGB or grayscale images
+    if channels == 3:  # RGB image
+        processed_image = processed_image_data.reshape((height, row_size_with_padding, 3))[:, :width * 3]
+    else:  # Grayscale image (1 channel)
+        processed_image = processed_image_data.reshape((height, row_size_with_padding))[:, :width]
+
+    # Save using PIL (this ensures proper BMP format)
+    pil_image = Image.fromarray(processed_image)
+    # imgplot = plt.imshow(pil_image)
+    # plt.show()
+    pil_image.save("../Imgs/sudoku_midtermGaussian.bmp")
+    # Free the memory after processing
+    nimage_dll.FreeImage(processed_data)
+
+    print("Processed image saved successfully.")
 
 # # Assuming the previous setup and function definitions are already present
 
