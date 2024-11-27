@@ -3,85 +3,85 @@ from PIL import Image
 
 
 print("Hello Python!\n")
-# # Load the DLL
-# nimage_dll = ctypes.CDLL('NImageDLL.dll')
+# Load the DLL
+nimage_dll = ctypes.CDLL('../MyDLL.dll')
 
-# # Function to create a new NImage object
-# nimage_dll.CreateNImage.restype = ctypes.c_void_p  # Returns a void* pointer
+# Function to create a new NImage object
+nimage_dll.CreateNImage.restype = ctypes.c_void_p  # Returns a void* pointer
 
-# # Function to delete the NImage object
-# nimage_dll.DeleteNImage.argtypes = [ctypes.c_void_p]
-# nimage_dll.DeleteNImage.restype = None
+# Function to delete the NImage object
+nimage_dll.DeleteNImage.argtypes = [ctypes.c_void_p]
+nimage_dll.DeleteNImage.restype = None
 
-# # Load an image from file
-# nimage_dll.LoadImage.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-# nimage_dll.LoadImage.restype = ctypes.c_bool
+# Load an image from file
+nimage_dll.LoadImage.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+nimage_dll.LoadImage.restype = ctypes.c_bool
 
-# # Get image width, height, and channels
-# nimage_dll.GetWidth.argtypes = [ctypes.c_void_p]
-# nimage_dll.GetWidth.restype = ctypes.c_int
+# Get image width, height, and channels
+nimage_dll.GetWidth.argtypes = [ctypes.c_void_p]
+nimage_dll.GetWidth.restype = ctypes.c_int
 
-# nimage_dll.GetHeight.argtypes = [ctypes.c_void_p]
-# nimage_dll.GetHeight.restype = ctypes.c_int
+nimage_dll.GetHeight.argtypes = [ctypes.c_void_p]
+nimage_dll.GetHeight.restype = ctypes.c_int
 
-# nimage_dll.GetChannels.argtypes = [ctypes.c_void_p]
-# nimage_dll.GetChannels.restype = ctypes.c_int
+nimage_dll.GetChannels.argtypes = [ctypes.c_void_p]
+nimage_dll.GetChannels.restype = ctypes.c_int
 
-# # Get image data and palette pointers
-# nimage_dll.GetData.argtypes = [ctypes.c_void_p]
-# nimage_dll.GetData.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Get image data and palette pointers
+nimage_dll.GetData.argtypes = [ctypes.c_void_p]
+nimage_dll.GetData.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# nimage_dll.GetPalette.argtypes = [ctypes.c_void_p]
-# nimage_dll.GetPalette.restype = ctypes.POINTER(ctypes.c_ubyte)
+nimage_dll.GetPalette.argtypes = [ctypes.c_void_p]
+nimage_dll.GetPalette.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# # Save image to file
-# nimage_dll.SaveImage.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-# nimage_dll.SaveImage.restype = ctypes.c_bool
+# Save image to file
+nimage_dll.SaveImage.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+nimage_dll.SaveImage.restype = ctypes.c_bool
 
-# # Apply Gaussian blur
-# nimage_dll.ApplyGaussianBlurImage.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_double]
-# nimage_dll.ApplyGaussianBlurImage.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Apply Gaussian blur
+nimage_dll.ApplyGaussianBlurImage.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_double]
+nimage_dll.ApplyGaussianBlurImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# # Invert image
-# nimage_dll.InverseImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int]
-# nimage_dll.InverseImage.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Invert image
+nimage_dll.InverseImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int]
+nimage_dll.InverseImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# # Convert RGB image to grayscale
-# nimage_dll.RgbToGray8bit.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
-# nimage_dll.RgbToGray8bit.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Convert RGB image to grayscale
+nimage_dll.RgbToGray8bit.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+nimage_dll.RgbToGray8bit.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# # Apply adaptive thresholding
-# nimage_dll.AdaptiveThresholdImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
-# nimage_dll.AdaptiveThresholdImage.restype = ctypes.POINTER(ctypes.c_ubyte)
+# Apply adaptive thresholding
+nimage_dll.AdaptiveThresholdImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+nimage_dll.AdaptiveThresholdImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 
-# # Create an image instance
-# nimage_instance = nimage_dll.CreateNImage()
+# Create an image instance
+nimage_instance = nimage_dll.CreateNImage()
 
-# # Load an image file (provide a valid path to an image file)
-# filename = "path/to/your/image.png".encode('utf-8')  # Convert filename to bytes
-# if nimage_dll.LoadImage(nimage_instance, filename):
-#     print("Image loaded successfully.")
+# Load an image file (provide a valid path to an image file)
+filename = "../Imgs/sudoku.bmp".encode('utf-8')  # Convert filename to bytes
+if nimage_dll.LoadImage(nimage_instance, filename):
+    print("Image loaded successfully.")
 
-#     # Get image dimensions
-#     width = nimage_dll.GetWidth(nimage_instance)
-#     height = nimage_dll.GetHeight(nimage_instance)
-#     channels = nimage_dll.GetChannels(nimage_instance)
-#     print(f"Width: {width}, Height: {height}, Channels: {channels}")
+    # Get image dimensions
+    width = nimage_dll.GetWidth(nimage_instance)
+    height = nimage_dll.GetHeight(nimage_instance)
+    channels = nimage_dll.GetChannels(nimage_instance)
+    print(f"Width: {width}, Height: {height}, Channels: {channels}")
 
-#     # Apply Gaussian blur with kernel size 5 and sigma 1.0
-#     blurred_data = nimage_dll.ApplyGaussianBlurImage(nimage_instance, 5, 1.0)
+    # Apply Gaussian blur with kernel size 5 and sigma 1.0
+    blurred_data = nimage_dll.ApplyGaussianBlurImage(nimage_instance, width, height, channels, 7, 1.0)
 
-#     # Example to process `blurred_data` if needed
-#     # Convert blurred_data to a byte array for further processing in Python
-#     size = width * height * channels
-#     blurred_array = ctypes.cast(blurred_data, ctypes.POINTER(ctypes.c_ubyte * size)).contents
+    # Example to process `blurred_data` if needed
+    # Convert blurred_data to a byte array for further processing in Python
+    size = width * height * channels
+    blurred_array = ctypes.cast(blurred_data, ctypes.POINTER(ctypes.c_ubyte * size)).contents
 
-#     # Save the blurred image
-#     save_path = "path/to/blurred_image.png".encode('utf-8')
-#     if nimage_dll.SaveImage(nimage_instance, save_path):
-#         print("Blurred image saved successfully.")
-#     else:
-#         print("Failed to save blurred image.")
+    # Save the blurred image
+    save_path = "../Imgs/sudoku_blur.bmp".encode('utf-8')
+    if nimage_dll.SaveImage(nimage_instance, save_path):
+        print("Blurred image saved successfully.")
+    else:
+        print("Failed to save blurred image.")
 
 # # Assuming the previous setup and function definitions are already present
 

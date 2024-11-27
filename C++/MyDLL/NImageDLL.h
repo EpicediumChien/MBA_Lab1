@@ -25,6 +25,8 @@ extern "C" {
     DLL_EXPORT unsigned char* GetPalette(void* nimage);
 
     DLL_EXPORT bool SaveImage(void* nimage, const char* filename);
+
+    DLL_EXPORT int GetSize(void* nimage);
 }
 
 #endif

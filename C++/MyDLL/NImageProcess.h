@@ -17,4 +17,6 @@ extern "C" {
     DLL_EXPORT unsigned char* AdaptiveThresholdImage(unsigned char* data, int width, int height);
 
     DLL_EXPORT unsigned char* SobelFilterImage(unsigned char* data, int width, int height, int channels);
+
+    DLL_EXPORT unsigned char* MemCopy(unsigned char* data, int width, int height, int channels);
 }

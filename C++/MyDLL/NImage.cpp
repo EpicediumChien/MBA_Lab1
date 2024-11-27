@@ -161,3 +161,8 @@ bool NImage::saveImage(const char* filename) {
     file.close();
     return true;
 }
+
+int NImage::getSize() const {
+    int rowSize = width * channels + 4 - (width * channels) % 4;
+    return rowSize * height;
+}

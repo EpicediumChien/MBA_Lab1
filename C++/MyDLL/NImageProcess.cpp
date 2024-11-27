@@ -135,22 +135,49 @@ unsigned char* applySobel8bit(unsigned char* data, int width, int height) {
 
 // Function to apply Sobel filter on a 24-bit color image
 unsigned char* applySobel24bit(unsigned char* data, int width, int height) {
-    int gx, gy, gR, gG, gB;
-    int sumXr, sumYr, sumXg, sumYg, sumXb, sumYb;
+    if (data == NULL || width <= 0 || height <= 0) {
+        fprintf(stderr, "Error: Invalid input parameters.\n");
+        return NULL;
+    }
 
-    unsigned char* output = (unsigned char*)malloc(width * height * 3 * sizeof(unsigned char));
-    // Iterate over each pixel in the image (skipping edges)
+    int rowSize = (width * 3 + 3) & ~3; // Align rows to 4-byte boundaries
+    unsigned char* output = (unsigned char*)malloc(rowSize * height);
+    if (output == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        return NULL;
+    }
+
+    // Sobel kernels
+    int SobelX[3][3] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
+    };
+    int SobelY[3][3] = {
+        {-1, -2, -1},
+        { 0,  0,  0},
+        { 1,  2,  1}
+    };
+
+    // Apply Sobel filter
     for (int y = 1; y < height - 1; ++y) {
         for (int x = 1; x < width - 1; ++x) {
-            sumXr = sumYr = sumXg = sumYg = sumXb = sumYb = 0;
+            int sumXr = 0, sumYr = 0, sumXg = 0, sumYg = 0, sumXb = 0, sumYb = 0;
 
-            // Apply Sobel kernel for both x and y gradients
             for (int ky = -1; ky <= 1; ++ky) {
                 for (int kx = -1; kx <= 1; ++kx) {
-                    int idx = ((y + ky) * width + (x + kx)) * 3; // 3 channels for RGB
-                    int r = data[idx];     // Red channel
-                    int g = data[idx + 1]; // Green channel
-                    int b = data[idx + 2]; // Blue channel
+                    int ny = y + ky;
+                    int nx = x + kx;
+
+                    // Clamp indices to image bounds
+                    if (ny < 0 || ny >= height || nx < 0 || nx >= width) {
+                        continue;
+                    }
+
+                    int idx = ny * rowSize + nx * 3;
+                    int r = data[idx];
+                    int g = data[idx + 1];
+                    int b = data[idx + 2];
 
                     sumXr += SobelX[ky + 1][kx + 1] * r;
                     sumYr += SobelY[ky + 1][kx + 1] * r;
@@ -161,24 +188,23 @@ unsigned char* applySobel24bit(unsigned char* data, int width, int height) {
                 }
             }
 
-            // Calculate the gradient magnitudes for each channel
-            gR = (int)sqrt(sumXr * sumXr + sumYr * sumYr);
-            gG = (int)sqrt(sumXg * sumXg + sumYg * sumYg);
-            gB = (int)sqrt(sumXb * sumXb + sumYb * sumYb);
+            // Gradient magnitudes
+            int gR = (int)sqrt(sumXr * sumXr + sumYr * sumYr);
+            int gG = (int)sqrt(sumXg * sumXg + sumYg * sumYg);
+            int gB = (int)sqrt(sumXb * sumXb + sumYb * sumYb);
 
-            // Clamp the values to be within the 0-255 range
-            if (gR > 255) gR = 255;
-            if (gG > 255) gG = 255;
-            if (gB > 255) gB = 255;
+            // Clamp values to 0-255
+            gR = (gR > 255) ? 255 : gR;
+            gG = (gG > 255) ? 255 : gG;
+            gB = (gB > 255) ? 255 : gB;
 
-            // Set the output pixel values
-            int idx = (y * width + x) * 3;
+            int idx = y * rowSize + x * 3;
             output[idx] = (unsigned char)gR;
             output[idx + 1] = (unsigned char)gG;
             output[idx + 2] = (unsigned char)gB;
-
         }
     }
+
     return output;
 }
 
@@ -288,6 +314,7 @@ DLL_EXPORT unsigned char* AdaptiveThresholdImage(unsigned char* data, int width,
 
 DLL_EXPORT unsigned char* SobelFilterImage(unsigned char* data, int width, int height, int channels)
 {
+    width = width * channels + 4 - (width % 4);
     if (channels == 1) {
         return applySobel8bit(data, width, height);
     }
@@ -295,4 +322,22 @@ DLL_EXPORT unsigned char* SobelFilterImage(unsigned char* data, int width, int h
     {
         return applySobel24bit(data, width, height);
     }
+}
+
+unsigned char* memCopy(unsigned char* data, int width, int height, int channels) {
+    int size = width * height * channels;
+    unsigned char* copyData = (unsigned char*)malloc(size * sizeof(unsigned char));
+    if (!copyData) {
+        // Handle memory allocation failure
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        return NULL;
+    }
+    for (int i = size - 1; i >= 0; i--) {
+        copyData[i] = data[i];
+    }
+    return copyData;
+}
+
+DLL_EXPORT unsigned char* MemCopy(unsigned char* data, int width, int height, int channels) {
+    return memCopy(data, width, height, channels);
 }

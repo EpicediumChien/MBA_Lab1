@@ -40,3 +40,7 @@ DLL_EXPORT unsigned char* GetPalette(void* nimage) {
 DLL_EXPORT bool SaveImage(void* nimage, const char* filename) {
     return static_cast<NImage*>(nimage)->saveImage(filename);
 }
+
+DLL_EXPORT int GetSize(void* nimage) {
+    return static_cast<NImage*>(nimage)->getSize();
+}

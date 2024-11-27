@@ -55,5 +55,6 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getChannels() const; 
+    int getSize() const;
 };
 #endif

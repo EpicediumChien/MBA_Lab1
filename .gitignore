@@ -3,3 +3,8 @@
 x64/
 bin/
 obj/
+/MyDLL.dll
+/MyDLL.exp
+/MyDLL.lib
+/MyDLL.pdb
+*.hint
