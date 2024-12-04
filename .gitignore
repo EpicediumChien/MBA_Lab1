@@ -9,3 +9,4 @@ obj/
 /MyDLL.pdb
 *.hint
 /Imgs/sudoku_midtermGaussian.bmp
+/Python/venv

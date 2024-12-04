@@ -1,8 +1,8 @@
 import ctypes
 from PIL import Image
 import numpy as np
-# import matplotlib.pyplot as plt
-# import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 print("Hello Python!\n")
 
@@ -57,6 +57,10 @@ nimage_dll.InverseImage.restype = ctypes.POINTER(ctypes.c_ubyte)
 nimage_dll.FreeImage.argtypes = [ctypes.POINTER(ctypes.c_ubyte)]
 nimage_dll.FreeImage.restype = None
 
+# Invert image
+nimage_dll.ApplyOtsuBinarization.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int]
+nimage_dll.ApplyOtsuBinarization.restype = ctypes.POINTER(ctypes.c_ubyte)
+
 # Create an image instance
 nimage_instance = nimage_dll.CreateNImage()
 
@@ -75,7 +79,7 @@ if nimage_dll.LoadImage(nimage_instance, filename):
     image_data = nimage_dll.GetData(nimage_instance)
 
     # Apply the image inversion (or other processing)
-    processed_data = nimage_dll.MidtermGaussianBlurImage(image_data, width, height, channels)
+    processed_data = nimage_dll.ApplyOtsuBinarization(image_data, width, height, channels)
 
     # Calculate row size with padding (must be a multiple of 4)
     row_size_with_padding = width * channels + (4 - (width * channels) % 4)  # padded to 4-byte boundary
@@ -95,11 +99,21 @@ if nimage_dll.LoadImage(nimage_instance, filename):
     pil_image = Image.fromarray(processed_image)
     # imgplot = plt.imshow(pil_image)
     # plt.show()
-    pil_image.save("../Imgs/sudoku_midtermGaussian.bmp")
+    plt.imshow(pil_image)
+    img_path = "../Imgs/sudoku_midtermOtsu.bmp"
+    pil_image.save(img_path)
+    # Load the image  # Replace with your image path
+    img = mpimg.imread(img_path)
+
+    # Display the image
+    plt.imshow(img, cmap='gray')
+    plt.axis('off')  # Optional: Turn off axis
+    plt.show()
     # Free the memory after processing
     nimage_dll.FreeImage(processed_data)
 
     print("Processed image saved successfully.")
+    
 
 # # Assuming the previous setup and function definitions are already present
 
