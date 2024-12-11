@@ -24,9 +24,6 @@
     <ClInclude Include="NImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NImageProcess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NImageProcessDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NImageDLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NImageProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NImageProcessDLL.cpp">

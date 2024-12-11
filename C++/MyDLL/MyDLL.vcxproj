@@ -22,7 +22,6 @@
     <ClInclude Include="MyDLL.h" />
     <ClInclude Include="NImage.h" />
     <ClInclude Include="NImageDLL.h" />
-    <ClInclude Include="NImageProcess.h" />
     <ClInclude Include="NImageProcessDLL.h" />
     <ClInclude Include="NImgProcess.h" />
   </ItemGroup>
@@ -30,7 +29,6 @@
     <ClCompile Include="MyDLL.cpp" />
     <ClCompile Include="NImage.cpp" />
     <ClCompile Include="NImageDLL.cpp" />
-    <ClCompile Include="NImageProcess.cpp" />
     <ClCompile Include="NImageProcessDLL.cpp" />
     <ClCompile Include="NImgProcess.cpp" />
   </ItemGroup>
