@@ -51,7 +51,7 @@ static void dfs(int x, int y, int width, int height, unsigned char* sobelImage, 
 }
 
 // Function to process the image, detect objects, and return their data
-DLL_EXPORT ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int channels, int* objectCount) {
+ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int channels, int* objectCount) {
     unsigned char* sobelImage = SobelFilterImage(data, width, height, channels);
     int stride = width;
     int* visited = (int*)calloc(width * height, sizeof(int)); // To mark visited pixels
