@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MyAssignment2.h" />
     <ClInclude Include="MyDLL.h" />
     <ClInclude Include="NImage.h" />
     <ClInclude Include="NImageDLL.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="NImgProcess.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MyAsignment2.cpp" />
     <ClCompile Include="MyDLL.cpp" />
     <ClCompile Include="NImage.cpp" />
     <ClCompile Include="NImageDLL.cpp" />

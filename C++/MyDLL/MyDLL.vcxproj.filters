@@ -30,6 +30,9 @@
     <ClInclude Include="NImgProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyAssignment2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyDLL.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NImgProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyAsignment2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
