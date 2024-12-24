@@ -53,7 +53,13 @@ namespace MyApp2
         public static extern IntPtr GetData(IntPtr nImage);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "ProcessImage_Asm2")]
-        public static extern IntPtr ProcessImage_Asm2(IntPtr data, int width, int height, int channels, out int objectCount);
+        public static extern IntPtr ProcessImage_Asm2(IntPtr data, int width, int height, int channels, out int objectCount, out IntPtr processedImage);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void FreeProcessedImage(IntPtr image);
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void FreeObjectData(IntPtr objects);
 
         public MainWindow()
         {
@@ -105,20 +111,34 @@ namespace MyApp2
             // Marshal the ObjectData array
             List<ObjectData> objects = new List<ObjectData>();
             int objectCount;
+            IntPtr processedImagePtr;
             IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
-            IntPtr result = ProcessImage_Asm2(imagePtr, width, height, channels, out objectCount);
+            IntPtr result = ProcessImage_Asm2(imagePtr, width, height, channels, out objectCount, out processedImagePtr);
             if (result != IntPtr.Zero)
             {
-                string lableTxt = string.Empty;
-                for (int i = 0; i < objectCount; i++)
+                try
                 {
-                    // Marshal each object from the pointer
-                    ObjectData obj = Marshal.PtrToStructure<ObjectData>(IntPtr.Add(result, i * Marshal.SizeOf<ObjectData>()));
-                    objects.Add(obj);
-                    lableTxt += string.Format($"idx: {obj.Index}, runcount: {obj.RunCount}, area: {obj.Area}\n");
+                    // Display processed image
+                    ShowIntPtrOnImage(processedImagePtr);
 
+                    string labelTxt = string.Empty;
+                    for (int i = 0; i < objectCount; i++)
+                    {
+                        // Marshal each object from the pointer
+                        ObjectData obj = Marshal.PtrToStructure<ObjectData>(IntPtr.Add(result, i * Marshal.SizeOf<ObjectData>()));
+                        labelTxt += string.Format($"idx: {obj.Index}, runcount: {obj.RunCount}, area: {obj.Area}\n");
+                    }
+                    // LabelResult.Content = labelTxt;
+                    // Show the results in a dialog box
+                    ResultDialog dialog = new ResultDialog(labelTxt);
+                    dialog.ShowDialog(); // Open dialog as a modal window
                 }
-                LabelResult.Content = lableTxt;
+                finally
+                {
+                    // Free native memory
+                    FreeProcessedImage(processedImagePtr); // Free the processed image
+                    FreeObjectData(result);               // Free object data
+                }
             }
             else
             {

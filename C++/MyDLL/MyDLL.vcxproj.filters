@@ -18,19 +18,10 @@
     <ClInclude Include="MyDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NImageDLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NImageProcessDLL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NImgProcess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MyAssignment2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,19 +29,10 @@
     <ClCompile Include="MyDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NImageDLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NImageProcessDLL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NImgProcess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MyAsignment2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

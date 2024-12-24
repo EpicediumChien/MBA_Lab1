@@ -19,20 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImageProcess.h" />
     <ClInclude Include="MyAssignment2.h" />
     <ClInclude Include="MyDLL.h" />
-    <ClInclude Include="NImage.h" />
-    <ClInclude Include="NImageDLL.h" />
-    <ClInclude Include="NImageProcessDLL.h" />
-    <ClInclude Include="NImgProcess.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImageProcess.cpp" />
     <ClCompile Include="MyAsignment2.cpp" />
     <ClCompile Include="MyDLL.cpp" />
-    <ClCompile Include="NImage.cpp" />
-    <ClCompile Include="NImageDLL.cpp" />
-    <ClCompile Include="NImageProcessDLL.cpp" />
-    <ClCompile Include="NImgProcess.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

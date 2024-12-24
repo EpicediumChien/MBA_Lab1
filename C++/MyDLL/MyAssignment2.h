@@ -9,10 +9,12 @@ extern "C" {
     typedef struct {
         int Index;      // Object index
         int Area;       // Area of the object (count of pixels)
-        int RunCount;  // Perimeter of the object (count of boundary pixels)
+        int Perimeter;  // Perimeter of the object (count of boundary pixels)
     } ObjectData;
 
     // Function to process the image, detect objects, and return their data
-    DLL_EXPORT ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int channels, int* objectCount);
+    DLL_EXPORT ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int channels, int* objectCount, unsigned char** processedImage);
+    DLL_EXPORT void FreeProcessedImage(unsigned char* image);
+    DLL_EXPORT void FreeObjectData(ObjectData* objects);
 }
 
