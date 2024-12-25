@@ -150,7 +150,7 @@ unsigned char* MarkEdgesWithChainCode(unsigned char* binaryImage, int width, int
                     int ny = y + directions[d][0];
 
                     // If the neighbor is background (0), mark the current pixel as red
-                    if (binaryImage[ny * binaryStride + nx] == 0) {
+                    if (nx < 0 || nx >= width || ny < 0 || ny >= height || binaryImage[ny * binaryStride + nx] == 0) {
                         rgbImage[y * rgbStride + x * 3 + 0] = 0;   // Blue
                         rgbImage[y * rgbStride + x * 3 + 1] = 0;   // Green
                         rgbImage[y * rgbStride + x * 3 + 2] = 255; // Red
