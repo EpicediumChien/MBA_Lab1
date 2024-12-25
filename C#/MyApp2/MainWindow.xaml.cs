@@ -30,8 +30,8 @@ namespace MyApp2
         public struct ObjectData
         {
             public int Index;
-            public int Perimeter;
             public int Area;
+            public int Perimeter;
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -148,30 +148,6 @@ namespace MyApp2
                 MessageBox.Show("Failed to load image.");
             }
         }
-
-        //private void OnClick_ChainCode(object sender, RoutedEventArgs e)
-        //{
-        //    IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
-        //    IntPtr result = ProcessImageWithChainCode(imagePtr, width, height, channels);
-        //    if (result != IntPtr.Zero)
-        //    {
-        //        try
-        //        {
-        //            // Display processed image
-        //            ShowIntPtrOnImage(result, 3);
-        //        }
-        //        finally
-        //        {
-        //            // Free native memory
-        //            FreeProcessedImage(result); // Free the processed image=
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MessageBox.Show("Failed to load image.");
-        //    }
-
-        //}
 
         private void ShowIntPtrOnImage(IntPtr imgSource, int? targetChannels = null)
         {

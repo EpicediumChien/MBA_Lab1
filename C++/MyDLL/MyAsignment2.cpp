@@ -27,6 +27,9 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
     int* stackX = (int*)malloc(width * height * sizeof(int));
     int* stackY = (int*)malloc(width * height * sizeof(int));
     int stackIndex = 0;
+    // Initialize area and perimeter
+    *area = 0;
+    *perimeter = 0;
 
     // Push initial pixel onto the stack
     stackX[stackIndex] = x;
@@ -48,7 +51,6 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
 
         // Mark as visited
         visited[cy * stride + cx] = 1;
-        (*area)++;
 
         bool isBoundary = false;
 
@@ -71,9 +73,11 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
             }
         }
 
+        (*area)++;
         if (isBoundary) {
             (*perimeter)++;
         }
+        printf("Processing pixel (%d, %d): Area=%d, Perimeter=%d\n", cx, cy, *area, *perimeter);
     }
 
     free(stackX);
