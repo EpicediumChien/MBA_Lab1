@@ -61,6 +61,9 @@ namespace MyApp2
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void FreeObjectData(IntPtr objects);
 
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr ProcessImageWithChainCode(IntPtr data, int width, int height, int channels);
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -146,50 +149,85 @@ namespace MyApp2
             }
         }
 
-        private void ShowIntPtrOnImage(IntPtr imgSource)
+        private void OnClick_ChainCode(object sender, RoutedEventArgs e)
         {
-            // Copy data to a managed array
-            byte[] imageData = new byte[stride * height];
+            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+            IntPtr result = ProcessImageWithChainCode(imagePtr, width, height, channels);
+            if (result != IntPtr.Zero)
+            {
+                try
+                {
+                    // Display processed image
+                    ShowIntPtrOnImage(result, 3);
+                }
+                finally
+                {
+                    // Free native memory
+                    FreeProcessedImage(result); // Free the processed image=
+                }
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
 
+        }
+
+        private void ShowIntPtrOnImage(IntPtr imgSource, int? targetChannels = null)
+        {
             if (imgSource == IntPtr.Zero)
             {
-                MessageBox.Show("Failed to retrieve image data.");
+                MessageBox.Show("Image source is null.");
                 return;
             }
 
-            // Ensure width, height, and channels are correctly assigned
-            if (width <= 0 || height <= 0 || (channels != 1 && channels != 3))
+            if (width <= 0 || height <= 0)
             {
-                MessageBox.Show("Invalid image dimensions or channels.");
+                MessageBox.Show("Invalid image dimensions.");
                 return;
             }
-            Marshal.Copy(imgSource, imageData, 0, imageData.Length);
 
-            // Set the pixel format based on channels
-            PixelFormat pixelFormat = PixelFormats.Bgr24;
-            if (channels == 1)
+            int channelsToUse = targetChannels ?? channels;
+            PixelFormat pixelFormat = channelsToUse == 1 ? PixelFormats.Gray8 : PixelFormats.Bgr24;
+
+            int adjustedStride = (width * channelsToUse + 3) & ~3;
+            byte[] imageData = new byte[adjustedStride * height];
+
+            try
             {
-                pixelFormat = PixelFormats.Gray8;
+                Marshal.Copy(imgSource, imageData, 0, imageData.Length);
+
+                BitmapSource bitmap = BitmapSource.Create(
+                    width,
+                    height,
+                    96, // DPI X
+                    96, // DPI Y
+                    pixelFormat,
+                    null,
+                    imageData,
+                    adjustedStride);
+
+                LoadedImage.Source = bitmap;
             }
-
-            // Create a BitmapSource from the loaded image data
-            BitmapSource bitmap = BitmapSource.Create(
-                width,
-                height,
-                96, // DPI X
-                96, // DPI Y
-                pixelFormat,
-                null,
-                imageData,
-                stride);
-
-            // Set the image to the Image control
-            LoadedImage.Source = bitmap;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating image: {ex.Message}");
+            }
         }
 
         public IntPtr GetIntPtrFromImageSource(ImageSource imageSource)
         {
-            if (imageSource is BitmapSource bitmapSource)
+            if (imageSource == null)
+            {
+                throw new ArgumentNullException(nameof(imageSource), "ImageSource cannot be null.");
+            }
+
+            if (!(imageSource is BitmapSource bitmapSource))
+            {
+                throw new ArgumentException("ImageSource must be a BitmapSource to retrieve an IntPtr.");
+            }
+
+            if (bitmapSource != null)
             {
                 // Convert to a WritableBitmap to access the BackBuffer
                 var writableBitmap = new WriteableBitmap(bitmapSource);

@@ -21,6 +21,7 @@
         <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right">
             <Button Click="OnClick_LoadImage" Content="Load Image" />
             <Button Click="OnClick_RunAsm2" Content="Run Asm2" />
+            <Button Click="OnClick_ChainCode" Content="Chain code" />
         </StackPanel>
     </Grid>
 </Window>
