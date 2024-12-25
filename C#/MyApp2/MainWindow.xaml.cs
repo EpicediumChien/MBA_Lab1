@@ -30,7 +30,7 @@ namespace MyApp2
         public struct ObjectData
         {
             public int Index;
-            public int RunCount;
+            public int Perimeter;
             public int Area;
         }
 
@@ -122,14 +122,14 @@ namespace MyApp2
                 try
                 {
                     // Display processed image
-                    ShowIntPtrOnImage(processedImagePtr);
+                    ShowIntPtrOnImage(processedImagePtr, 3);
 
                     string labelTxt = string.Empty;
                     for (int i = 0; i < objectCount; i++)
                     {
                         // Marshal each object from the pointer
                         ObjectData obj = Marshal.PtrToStructure<ObjectData>(IntPtr.Add(result, i * Marshal.SizeOf<ObjectData>()));
-                        labelTxt += string.Format($"idx: {obj.Index}, runcount: {obj.RunCount}, area: {obj.Area}\n");
+                        labelTxt += string.Format($"idx: {obj.Index}, Perimeter: {obj.Perimeter}, Area: {obj.Area}\n");
                     }
                     // LabelResult.Content = labelTxt;
                     // Show the results in a dialog box
@@ -149,29 +149,29 @@ namespace MyApp2
             }
         }
 
-        private void OnClick_ChainCode(object sender, RoutedEventArgs e)
-        {
-            IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
-            IntPtr result = ProcessImageWithChainCode(imagePtr, width, height, channels);
-            if (result != IntPtr.Zero)
-            {
-                try
-                {
-                    // Display processed image
-                    ShowIntPtrOnImage(result, 3);
-                }
-                finally
-                {
-                    // Free native memory
-                    FreeProcessedImage(result); // Free the processed image=
-                }
-            }
-            else
-            {
-                MessageBox.Show("Failed to load image.");
-            }
+        //private void OnClick_ChainCode(object sender, RoutedEventArgs e)
+        //{
+        //    IntPtr imagePtr = GetIntPtrFromImageSource(LoadedImage.Source);
+        //    IntPtr result = ProcessImageWithChainCode(imagePtr, width, height, channels);
+        //    if (result != IntPtr.Zero)
+        //    {
+        //        try
+        //        {
+        //            // Display processed image
+        //            ShowIntPtrOnImage(result, 3);
+        //        }
+        //        finally
+        //        {
+        //            // Free native memory
+        //            FreeProcessedImage(result); // Free the processed image=
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("Failed to load image.");
+        //    }
 
-        }
+        //}
 
         private void ShowIntPtrOnImage(IntPtr imgSource, int? targetChannels = null)
         {

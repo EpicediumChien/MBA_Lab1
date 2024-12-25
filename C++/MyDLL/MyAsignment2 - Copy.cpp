@@ -21,8 +21,7 @@ unsigned char* BinarizeImage(unsigned char* data, int width, int height, int cha
 }
 
 // Static helper function for depth-first search (DFS) to find connected components and calculate area and perimeter
-static void dfs(int x, int y, int width, int height, unsigned char* binaryImage, unsigned char* visited, int* area, int* perimeter, int stride, unsigned char* rgbImage) {
-    int rgbStride = (width * 3 + 3) & ~3; // Stride for the RGB image
+static void dfs(int x, int y, int width, int height, unsigned char* binaryImage, unsigned char* visited, int* area, int* perimeter, int stride) {
     // Stack for DFS
     int* stackX = (int*)malloc(width * height * sizeof(int));
     int* stackY = (int*)malloc(width * height * sizeof(int));
@@ -58,10 +57,6 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
             int ny = cy + directions[i][1];
 
             if (nx < 0 || nx >= width || ny < 0 || ny >= height || binaryImage[ny * stride + nx] == 0) {
-                // If the neighbor is background (0), mark the current pixel as red
-                rgbImage[cy * rgbStride + cx * 3 + 0] = 0;   // Blue
-                rgbImage[cy * rgbStride + cx * 3 + 1] = 0;   // Green
-                rgbImage[cy * rgbStride + cx * 3 + 2] = 255; // Red
                 isBoundary = true;
             }
             else if (visited[ny * stride + nx] == 0 && binaryImage[ny * stride + nx] == 255) {
@@ -83,36 +78,20 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
 
 // Function to process the image, detect objects, and return their data
 ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int channels, int* objectCount, unsigned char** processedImage) {
-    // Calculate strides
-    int binaryStride = (width + 3) & ~3;  // Stride for binary image
-    int rgbStride = (width * 3 + 3) & ~3; // Stride for the RGB image
-
+    int stride = (width * channels + 3) & ~3;
     int threshold = 128;
     unsigned char* binaryImage = BinarizeImage(data, width, height, channels, threshold);
-    unsigned char* visited = (unsigned char*)calloc(height, binaryStride);
-    unsigned char* visitedBoundary = (unsigned char*)calloc(height, binaryStride);
-
-    // Allocate memory for the RGB image
-    unsigned char* rgbImage = (unsigned char*)calloc(height, rgbStride);
+    *processedImage = binaryImage;
+    unsigned char* visited = (unsigned char*)calloc(height, stride);
 
     ObjectData* objects = (ObjectData*)malloc(sizeof(ObjectData) * width * height);
     int currentIndex = 0;
 
-    // Initialize the RGB image (copy binary image to grayscale in RGB)
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            unsigned char intensity = binaryImage[y * binaryStride + x];
-            rgbImage[y * rgbStride + x * 3 + 0] = intensity; // Blue
-            rgbImage[y * rgbStride + x * 3 + 1] = intensity; // Green
-            rgbImage[y * rgbStride + x * 3 + 2] = intensity; // Red
-        }
-    }
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            if (binaryImage[y * binaryStride + x] == 255 && visited[y * binaryStride + x] == 0) {
+            if (binaryImage[y * stride + x] == 255 && visited[y * stride + x] == 0) {
                 int area = 0, perimeter = 0;
-                dfs(x, y, width, height, binaryImage, visited, &area, &perimeter, binaryStride, rgbImage);
+                dfs(x, y, width, height, binaryImage, visited, &area, &perimeter, stride);
 
                 if (area >= 10) { // Only include objects with area >= 10
                     objects[currentIndex].Index = currentIndex;
@@ -124,7 +103,6 @@ ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int ch
         }
     }
 
-    *processedImage = rgbImage;
     *objectCount = currentIndex;
     objects = (ObjectData*)realloc(objects, sizeof(ObjectData) * currentIndex);
 
@@ -139,4 +117,59 @@ void FreeProcessedImage(unsigned char* image) {
 
 void FreeObjectData(ObjectData* objects) {
     free(objects);
+}
+
+// Function to mark edges in red
+unsigned char* MarkEdgesWithChainCode(unsigned char* binaryImage, int width, int height) {
+    // Calculate strides
+    int binaryStride = (width + 3) & ~3;  // Stride for binary image
+    int rgbStride = (width * 3 + 3) & ~3; // Stride for the RGB image
+
+    // Allocate memory for the RGB image
+    unsigned char* rgbImage = (unsigned char*)calloc(height, rgbStride);
+
+    // Initialize the RGB image (copy binary image to grayscale in RGB)
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            unsigned char intensity = binaryImage[y * binaryStride + x];
+            rgbImage[y * rgbStride + x * 3 + 0] = intensity; // Blue
+            rgbImage[y * rgbStride + x * 3 + 1] = intensity; // Green
+            rgbImage[y * rgbStride + x * 3 + 2] = intensity; // Red
+        }
+    }
+
+    // Chain code directions (clockwise starting from right)
+    int directions[8][2] = { {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1} };
+
+    // Mark edges in red using chain code
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            if (binaryImage[y * binaryStride + x] == 255) {
+                for (int d = 0; d < 8; d++) {
+                    int nx = x + directions[d][1];
+                    int ny = y + directions[d][0];
+
+                    // If the neighbor is background (0), mark the current pixel as red
+                    if (binaryImage[ny * binaryStride + nx] == 0) {
+                        rgbImage[y * rgbStride + x * 3 + 0] = 0;   // Blue
+                        rgbImage[y * rgbStride + x * 3 + 1] = 0;   // Green
+                        rgbImage[y * rgbStride + x * 3 + 2] = 255; // Red
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return rgbImage;
+}
+
+
+// Main processing function
+unsigned char* ProcessImageWithChainCode(unsigned char* data, int width, int height, int channels) {
+    unsigned char* binaryImage = BinarizeImage(data, width, height, channels, 128);
+    unsigned char* outputImage = MarkEdgesWithChainCode(binaryImage, width, height);
+
+    free(binaryImage); // Free binary image memory
+    return outputImage;
 }
