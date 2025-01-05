@@ -21,26 +21,26 @@ unsigned char* BinarizeImage(unsigned char* data, int width, int height, int cha
 }
 
 // Static helper function for depth-first search (DFS) to find connected components and calculate area and perimeter
-static void dfs(int x, int y, int width, int height, unsigned char* binaryImage, unsigned char* visited, int* area, int* perimeter, int stride, unsigned char* rgbImage) {
+static void dfs(int x, int y, int width, int height, unsigned char* binaryImage, unsigned char* visited, int* area, int* perimeter, int stride, unsigned char* rgbImage, float* centerX, float* centerY, float* diameter) {
     int rgbStride = (width * 3 + 3) & ~3; // Stride for the RGB image
-    // Stack for DFS
-    int* stackX = (int*)malloc(width * height * sizeof(int));
-    int* stackY = (int*)malloc(width * height * sizeof(int));
-    int stackIndex = 0;
-    // Initialize area and perimeter
+
     *area = 0;
     *perimeter = 0;
 
-    // Push initial pixel onto the stack
+    long long sumX = 0, sumY = 0;
+    int minX = width, maxX = 0, minY = height, maxY = 0;
+
+    int* stackX = (int*)malloc(width * height * sizeof(int));
+    int* stackY = (int*)malloc(width * height * sizeof(int));
+    int stackIndex = 0;
+
     stackX[stackIndex] = x;
     stackY[stackIndex] = y;
     stackIndex++;
 
-    // Directions for 8-connectivity
-    int directions[8][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1} };
+    int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 
     while (stackIndex > 0) {
-        // Pop pixel from stack
         stackIndex--;
         int cx = stackX[stackIndex];
         int cy = stackY[stackIndex];
@@ -49,21 +49,23 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
             continue;
         }
 
-        // Mark as visited
         visited[cy * stride + cx] = 1;
+        (*area)++;
+        sumX += cx;
+        sumY += cy;
+
+        if (cx < minX) minX = cx;
+        if (cx > maxX) maxX = cx;
+        if (cy < minY) minY = cy;
+        if (cy > maxY) maxY = cy;
 
         bool isBoundary = false;
 
-        // Check all neighbors
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 4; i++) {
             int nx = cx + directions[i][0];
             int ny = cy + directions[i][1];
 
             if (nx < 0 || nx >= width || ny < 0 || ny >= height || binaryImage[ny * stride + nx] == 0) {
-                // If the neighbor is background (0), mark the current pixel as red
-                rgbImage[cy * rgbStride + cx * 3 + 0] = 0;   // Blue
-                rgbImage[cy * rgbStride + cx * 3 + 1] = 0;   // Green
-                rgbImage[cy * rgbStride + cx * 3 + 2] = 255; // Red
                 isBoundary = true;
             }
             else if (visited[ny * stride + nx] == 0 && binaryImage[ny * stride + nx] == 255) {
@@ -73,12 +75,17 @@ static void dfs(int x, int y, int width, int height, unsigned char* binaryImage,
             }
         }
 
-        (*area)++;
         if (isBoundary) {
+            rgbImage[cy * rgbStride + cx * 3 + 0] = 0;   // Blue
+            rgbImage[cy * rgbStride + cx * 3 + 1] = 0;   // Green
+            rgbImage[cy * rgbStride + cx * 3 + 2] = 255; // Red
             (*perimeter)++;
         }
-        printf("Processing pixel (%d, %d): Area=%d, Perimeter=%d\n", cx, cy, *area, *perimeter);
     }
+
+    *centerX = (float)sumX / (*area);
+    *centerY = (float)sumY / (*area);
+    *diameter = fmax(maxX - minX, maxY - minY);
 
     free(stackX);
     free(stackY);
@@ -116,12 +123,16 @@ ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int ch
         for (int x = 0; x < width; x++) {
             if (binaryImage[y * binaryStride + x] == 255 && visited[y * binaryStride + x] == 0) {
                 int area = 0, perimeter = 0;
-                dfs(x, y, width, height, binaryImage, visited, &area, &perimeter, binaryStride, rgbImage);
+                float centerX = 0, centerY = 0, diameter = 0;
+                dfs(x, y, width, height, binaryImage, visited, &area, &perimeter, binaryStride, rgbImage, &centerX, &centerY, &diameter);
 
                 if (area >= 10) { // Only include objects with area >= 10
                     objects[currentIndex].Index = currentIndex;
                     objects[currentIndex].Area = area;
                     objects[currentIndex].Perimeter = perimeter;
+                    objects[currentIndex].CenterX = centerX;
+                    objects[currentIndex].CenterY = centerY;
+                    objects[currentIndex].Diameter = diameter;
                     currentIndex++;
                 }
             }

@@ -69,6 +69,9 @@ extern "C" {
     DLL_EXPORT unsigned char* MemCopy(unsigned char* data, int width, int height, int channels);
     DLL_EXPORT unsigned char* MidtermGaussianBlurImage(unsigned char* data, int width, int height, int channels);
 
+    // Image detect
+    DLL_EXPORT float CompareImagesWithFourierDescriptors(unsigned char* image1, int width1, int height1, unsigned char* image2, int width2, int height2);
+
 #ifdef __cplusplus
 }
 #endif

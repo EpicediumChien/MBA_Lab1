@@ -419,3 +419,94 @@ unsigned char* applyOtsuBinarization24Bit(unsigned char* rgbImage, int width, in
 unsigned char* ApplyOtsuBinarization(unsigned char* data, int width, int height, int channels) {
     return applyOtsuBinarization24Bit(data, width, height, channels);
 }
+
+float* ComputeFourierDescriptors(unsigned char* binaryImage, int width, int height, int* descriptorCount) {
+    int numBoundaryPoints = 0;
+    int* boundaryX = (int*)malloc(width * height * sizeof(int));
+    int* boundaryY = (int*)malloc(width * height * sizeof(int));
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (binaryImage[y * width + x] == 255) {
+                int isBoundary = 0;
+                for (int dy = -1; dy <= 1; ++dy) {
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        int nx = x + dx, ny = y + dy;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            if (binaryImage[ny * width + nx] == 0) {
+                                isBoundary = 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (isBoundary) {
+                    boundaryX[numBoundaryPoints] = x;
+                    boundaryY[numBoundaryPoints] = y;
+                    ++numBoundaryPoints;
+                }
+            }
+        }
+    }
+
+    float centroidX = 0, centroidY = 0;
+    for (int i = 0; i < numBoundaryPoints; ++i) {
+        centroidX += boundaryX[i];
+        centroidY += boundaryY[i];
+    }
+    centroidX /= numBoundaryPoints;
+    centroidY /= numBoundaryPoints;
+
+    float* distances = (float*)malloc(numBoundaryPoints * sizeof(float));
+    for (int i = 0; i < numBoundaryPoints; ++i) {
+        distances[i] = sqrt(pow(boundaryX[i] - centroidX, 2) + pow(boundaryY[i] - centroidY, 2));
+    }
+
+    float* descriptors = (float*)malloc(numBoundaryPoints * sizeof(float));
+    for (int k = 0; k < numBoundaryPoints; ++k) {
+        float real = 0, imag = 0;
+        for (int n = 0; n < numBoundaryPoints; ++n) {
+            float angle = -2.0f * M_PI * k * n / numBoundaryPoints;
+            real += distances[n] * cos(angle);
+            imag += distances[n] * sin(angle);
+        }
+        descriptors[k] = sqrt(real * real + imag * imag);
+    }
+
+    *descriptorCount = numBoundaryPoints;
+    free(boundaryX);
+    free(boundaryY);
+    free(distances);
+    return descriptors;
+}
+
+float CompareImagesWithFourierDescriptors(unsigned char* image1, int width1, int height1,
+    unsigned char* image2, int width2, int height2) {
+    if (width1 != width2 || height1 != height2) {
+        fprintf(stderr, "Error: Images must have the same dimensions.\n");
+        return -1.0f;
+    }
+
+    int descriptorCount1, descriptorCount2;
+    float* descriptors1 = ComputeFourierDescriptors(image1, width1, height1, &descriptorCount1);
+    float* descriptors2 = ComputeFourierDescriptors(image2, width2, height2, &descriptorCount2);
+
+    if (descriptorCount1 != descriptorCount2) {
+        fprintf(stderr, "Error: Descriptor counts do not match.\n");
+        free(descriptors1);
+        free(descriptors2);
+        return -1.0f;
+    }
+
+    float similarity = 0.0f;
+    for (int i = 0; i < descriptorCount1; ++i) {
+        float diff = descriptors1[i] - descriptors2[i];
+        similarity += diff * diff;
+    }
+    similarity = sqrt(similarity);
+
+    free(descriptors1);
+    free(descriptors2);
+
+    return similarity;
+}

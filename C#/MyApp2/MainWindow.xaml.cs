@@ -32,6 +32,9 @@ namespace MyApp2
             public int Index;
             public int Area;
             public int Perimeter;
+            public float CenterX;
+            public float CenterY;
+            public float Diameter;
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
@@ -129,7 +132,7 @@ namespace MyApp2
                     {
                         // Marshal each object from the pointer
                         ObjectData obj = Marshal.PtrToStructure<ObjectData>(IntPtr.Add(result, i * Marshal.SizeOf<ObjectData>()));
-                        labelTxt += string.Format($"idx: {obj.Index}, Perimeter: {obj.Perimeter}, Area: {obj.Area}\n");
+                        labelTxt += string.Format($"idx: {obj.Index}, Perimeter: {obj.Perimeter}, Area: {obj.Area}, CenterX: {obj.CenterX}, CenterY: {obj.CenterY}, Diameter: {obj.Diameter}\n");
                     }
                     // LabelResult.Content = labelTxt;
                     // Show the results in a dialog box

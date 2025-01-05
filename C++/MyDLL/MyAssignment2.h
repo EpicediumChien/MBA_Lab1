@@ -10,6 +10,9 @@ extern "C" {
         int Index;      // Object index
         int Area;       // Area of the object (count of pixels)
         int Perimeter;  // Perimeter of the object (count of boundary pixels)
+        float CenterX;  // X-coordinate of the object's center
+        float CenterY;  // Y-coordinate of the object's center
+        float Diameter; // Estimated diameter of the object
     } ObjectData;
 
     // Function to process the image, detect objects, and return their data
@@ -17,5 +20,10 @@ extern "C" {
     //DLL_EXPORT unsigned char* ProcessImageWithChainCode(unsigned char* image, int width, int height, int channels);
     DLL_EXPORT void FreeProcessedImage(unsigned char* image);
     DLL_EXPORT void FreeObjectData(ObjectData* objects);
+    DLL_EXPORT unsigned char* BinarizeImage(unsigned char* data, int width, int height, int channels)
+    {
+        int threshold = 128;
+        return BinarizeImage(data, width, height, channels, threshold);
+    }
 }
 
