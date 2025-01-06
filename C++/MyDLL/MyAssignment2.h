@@ -20,7 +20,9 @@ extern "C" {
     //DLL_EXPORT unsigned char* ProcessImageWithChainCode(unsigned char* image, int width, int height, int channels);
     DLL_EXPORT void FreeProcessedImage(unsigned char* image);
     DLL_EXPORT void FreeObjectData(ObjectData* objects);
-    DLL_EXPORT unsigned char* BinarizeImage(unsigned char* data, int width, int height, int channels)
+
+    unsigned char* BinarizeImage(unsigned char* data, int width, int height, int channels, int threshold);
+    DLL_EXPORT unsigned char* TransferBinarizeImage(unsigned char* data, int width, int height, int channels)
     {
         int threshold = 128;
         return BinarizeImage(data, width, height, channels, threshold);

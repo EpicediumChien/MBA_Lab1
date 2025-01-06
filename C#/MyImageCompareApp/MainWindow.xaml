@@ -5,23 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MyImageCompareApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" MinWidth="1200" 
+        SizeToContent="Width">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="180" />
+        </Grid.ColumnDefinitions>
         <Grid.Resources>
             <Style TargetType="Button">
                 <Setter Property="Width" Value="150" />
                 <Setter Property="Height" Value="30" />
                 <Setter Property="Margin" Value="10,20"/>
             </Style>
+            <Style TargetType="Image">
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="Margin" Value="40" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Setter Property="MaxWidth" Value="600" />
+            </Style>
         </Grid.Resources>
-        <StackPanel >
-            <Image x:Name="LoadedImage1" VerticalAlignment="Top" Margin="40" Stretch="None"/>
-            <Image x:Name="LoadedImage2" VerticalAlignment="Top" Margin="40" Stretch="None"/>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <Image x:Name="LoadedImage1"/>
+            <Image x:Name="LoadedImage2"/>
         </StackPanel>
-        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center">
-            <Label Grid.Column="1" x:Name="LabelResult" />
-        </StackPanel>
-        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Right">
+        <StackPanel Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right">
             <Button Click="OnClick_LoadImage" Content="Load Image" />
             <Button Click="OnClick_RunCompare" Content="Run Compare" />
             <!--<Button Click="OnClick_ChainCode" Content="Chain code" />-->

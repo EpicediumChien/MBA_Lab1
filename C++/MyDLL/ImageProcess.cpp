@@ -59,10 +59,27 @@ int LoadImage(NImage* image, const char* filename) {
     }
     else if (bitsPerPixel == 8) {
         image->channels = 1;
+        int rowSize = (image->width + 3) & ~3;
         image->palette = (unsigned char*)malloc(1024);
+        if (!image->palette) {
+            fprintf(stderr, "Error: Memory allocation failed for palette\n");
+            fclose(file);
+            return 0;
+        }
         fread(image->palette, 1, 1024, file);
-        image->data = (unsigned char*)malloc(image->width * image->height);
-        fread(image->data, 1, image->width * image->height, file);
+
+        image->data = (unsigned char*)malloc(rowSize * image->height);
+        if (!image->data) {
+            fprintf(stderr, "Error: Memory allocation failed for image data\n");
+            free(image->palette);
+            fclose(file);
+            return 0;
+        }
+
+        // Read image data (bottom-to-top row order)
+        for (int y = 0; y < image->height; ++y) {
+            fread(image->data + (image->height - y - 1) * rowSize, 1, rowSize, file);
+        }
     }
     else {
         fclose(file);

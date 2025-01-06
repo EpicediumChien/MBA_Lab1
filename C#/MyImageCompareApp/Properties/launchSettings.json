@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MyImageCompareApp": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
