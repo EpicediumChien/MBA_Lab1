@@ -26,11 +26,15 @@
             </Style>
         </Grid.Resources>
         <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Stretch">
-            <Image x:Name="LoadedImage1"/>
-            <Image x:Name="LoadedImage2"/>
+            <Image x:Name="LoadedImage"/>
+            <Image x:Name="LoadedReference"/>
         </StackPanel>
         <StackPanel Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+            <Image x:Name="LoadedMark" MaxWidth="300" MaxHeight="300"/>
+            <Button Click="OnClick_LoadMark" Content="Load Mark" />
+            <Button Click="OnClick_LoadReference" Content="Load Ref" />
             <Button Click="OnClick_LoadImage" Content="Load Image" />
+            <Button Click="OnClick_MarkOnReference" Content="Mark Reference" />
             <Button Click="OnClick_RunCompare" Content="Run Compare" />
             <!--<Button Click="OnClick_ChainCode" Content="Chain code" />-->
         </StackPanel>

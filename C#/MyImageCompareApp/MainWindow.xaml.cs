@@ -21,9 +21,12 @@ namespace MyImageCompareApp
     public partial class MainWindow : Window
     {
         #region Properties
-        private Queue<IntPtr> loadedImageIntPtrs;
-        int sourceWidth, sourceHeight, sourceChannels,
-             targetWidth, targetHeight, targetChannels;
+        private IntPtr loadedImageIntPtr;
+        private IntPtr referenceImageIntPtr;
+        private IntPtr markImageIntPtr;
+        int loadWidth, loadHeight, loadChannels,
+             refWidth, refHeight, refChannels,
+             markWidth, markHeight, markChannels;
         private static string tempFilePath = string.Empty;
         #endregion
         // Load the DLL functions
@@ -71,12 +74,93 @@ namespace MyImageCompareApp
         public static extern float CompareImagesWithFourierDescriptors(IntPtr sourceImage, int sourceWidth, int sourceHeight, IntPtr targetImage, int targetWidth, int targetHeight);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr TransferBinarizeImage(IntPtr image, int width, int height, int channel = 3);
+        public static extern IntPtr TransferBinarizeImage(IntPtr image, int width, int height, int channel = 3); //FindReferenceMarker
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr FindReferenceMarker(IntPtr markImage, int markWidth, int markHeight, int markChannel, int markStride,
+                                                IntPtr refImage, int refWidth, int refHeight, int refChannel, int refStride);
 
         public MainWindow()
         {
             InitializeComponent();
-            loadedImageIntPtrs = new Queue<nint> { };
+        }
+
+        private void OnClick_LoadMark(object sender, RoutedEventArgs e)
+        {
+            #region browse
+            // Create an OpenFileDialog instance
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.bmp;|All Files|*.*", // Filter for image files
+                Title = "Select an Image File"
+            };
+
+            // Show the dialog and get result
+            if (openFileDialog.ShowDialog() == true)
+            {
+                tempFilePath = openFileDialog.FileName;
+            }
+            #endregion
+
+            #region LoadImage
+            nint loadedImage = CreateNImage();
+
+            string imagePath = tempFilePath; // Update with your BMP image path
+            if (LoadImage(loadedImage, imagePath))
+            {
+                // Only on load image
+                markChannels = GetChannels(loadedImage);
+                markWidth = GetWidth(loadedImage);
+                markHeight = GetHeight(loadedImage);
+
+                markImageIntPtr = GetData(loadedImage);
+
+                ShowIntPtrOnImage(LoadedMark, markImageIntPtr, markWidth, markHeight, markChannels);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+            #endregion
+        }
+
+        private void OnClick_LoadReference(object sender, RoutedEventArgs e)
+        {
+            #region browse
+            // Create an OpenFileDialog instance
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.bmp;|All Files|*.*", // Filter for image files
+                Title = "Select an Image File"
+            };
+
+            // Show the dialog and get result
+            if (openFileDialog.ShowDialog() == true)
+            {
+                tempFilePath = openFileDialog.FileName;
+            }
+            #endregion
+
+            #region LoadImage
+            nint loadedImage = CreateNImage();
+
+            string imagePath = tempFilePath; // Update with your BMP image path
+            if (LoadImage(loadedImage, imagePath))
+            {
+                // Only on load image
+                refChannels = GetChannels(loadedImage);
+                refWidth = GetWidth(loadedImage);
+                refHeight = GetHeight(loadedImage);
+
+                referenceImageIntPtr = GetData(loadedImage);
+
+                ShowIntPtrOnImage(LoadedReference, referenceImageIntPtr, refWidth, refHeight, refChannels);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load image.");
+            }
+            #endregion
         }
 
         private void OnClick_LoadImage(object sender, RoutedEventArgs e)
@@ -102,29 +186,14 @@ namespace MyImageCompareApp
             string imagePath = tempFilePath; // Update with your BMP image path
             if (LoadImage(loadedImage, imagePath))
             {
-                bool shiftFlag = false;
-                if(loadedImageIntPtrs.Count > 0) shiftFlag = true;
-                if (shiftFlag)
-                {
-                    targetWidth = sourceWidth;
-                    targetHeight = sourceHeight;
-                    targetChannels = sourceChannels;
-                }
                 // Only on load image
-                sourceChannels = GetChannels(loadedImage);
-                sourceWidth = GetWidth(loadedImage);
-                sourceHeight = GetHeight(loadedImage);
-                if (loadedImageIntPtrs.Count >= 2)
-                {
-                    IntPtr oldDataPtr = loadedImageIntPtrs.Dequeue();
-                    FreeProcessedImage(oldDataPtr);
-                }
+                loadChannels = GetChannels(loadedImage);
+                loadWidth = GetWidth(loadedImage);
+                loadHeight = GetHeight(loadedImage);
 
+                loadedImageIntPtr = GetData(loadedImage);
 
-                loadedImageIntPtrs.Enqueue(GetData(loadedImage));
-
-                ShowIntPtrOnImage(LoadedImage1, loadedImageIntPtrs.Last(), sourceWidth, sourceHeight, sourceChannels);
-                if(loadedImageIntPtrs.Count == 2) ShowIntPtrOnImage(LoadedImage2, loadedImageIntPtrs.First(), targetWidth, targetHeight, targetChannels);
+                ShowIntPtrOnImage(LoadedImage, loadedImageIntPtr, loadWidth, loadHeight, loadChannels);
             }
             else
             {
@@ -133,15 +202,35 @@ namespace MyImageCompareApp
             #endregion
         }
 
+        private void OnClick_MarkOnReference(object sender, RoutedEventArgs e)
+        {
+            if (LoadedReference.Source != null && LoadedMark.Source != null)
+            {
+                IntPtr markImagePtr = GetIntPtrFromImageSource(LoadedMark.Source, ref markWidth, ref markHeight);
+                markImagePtr = TransferBinarizeImage(markImagePtr, markWidth, markHeight, markChannels);
+                IntPtr refImagePtr = GetIntPtrFromImageSource(LoadedReference.Source, ref refWidth, ref refHeight);
+                refImagePtr = TransferBinarizeImage(refImagePtr, refWidth, refHeight, refChannels);
+                IntPtr markResult = FindReferenceMarker(markImagePtr, markWidth, markHeight, markChannels, (markWidth * markChannels + 3) & ~3,
+                    refImagePtr, refWidth, refHeight, refChannels, (refWidth * refChannels + 3) & ~3);
+
+                ShowIntPtrOnImage(LoadedMark, markImagePtr, markWidth, markHeight, markChannels);
+                ShowIntPtrOnImage(LoadedReference, markResult, refWidth, refHeight, 3);
+            }
+            else
+            {
+                MessageBox.Show("Failed to compare images.");
+            }
+        }
+
         private void OnClick_RunCompare(object sender, RoutedEventArgs e)
         {
-            if (LoadedImage1.Source != null && LoadedImage2.Source != null)
+            if (LoadedImage.Source != null && LoadedReference.Source != null && LoadedMark.Source != null)
             {
-                IntPtr sourceImagePtr = GetIntPtrFromImageSource(LoadedImage1.Source);
-                if (sourceChannels != 1) sourceImagePtr = TransferBinarizeImage(sourceImagePtr, sourceWidth, sourceHeight);
-                IntPtr targetImagePtr = GetIntPtrFromImageSource(LoadedImage2.Source);
-                if (targetChannels != 1) targetImagePtr = TransferBinarizeImage(targetImagePtr, targetWidth, targetHeight);
-                float similarity = CompareImagesWithFourierDescriptors(sourceImagePtr, sourceWidth, sourceHeight, targetImagePtr, targetWidth, targetHeight);
+                IntPtr sourceImagePtr = GetIntPtrFromImageSource(LoadedImage.Source, ref loadWidth, ref loadHeight);
+                if (loadChannels != 1) sourceImagePtr = TransferBinarizeImage(sourceImagePtr, loadWidth, loadHeight);
+                IntPtr targetImagePtr = GetIntPtrFromImageSource(LoadedReference.Source, ref refWidth, ref refHeight);
+                if (refChannels != 1) targetImagePtr = TransferBinarizeImage(targetImagePtr, refWidth, refHeight);
+                float similarity = CompareImagesWithFourierDescriptors(sourceImagePtr, loadWidth, loadHeight, targetImagePtr, refWidth, refHeight);
                 MessageBox.Show($"The similarity is: {similarity}");
             }
             else
@@ -195,7 +284,7 @@ namespace MyImageCompareApp
             }
         }
 
-        public IntPtr GetIntPtrFromImageSource(ImageSource imageSource)
+        public IntPtr GetIntPtrFromImageSource(ImageSource imageSource, ref int width, ref int height)
         {
             if (imageSource == null)
             {
@@ -211,11 +300,14 @@ namespace MyImageCompareApp
             {
                 // Convert to a WritableBitmap to access the BackBuffer
                 var writableBitmap = new WriteableBitmap(bitmapSource);
+                width = (int)writableBitmap.Width;
+                height = (int)writableBitmap.Height;
 
                 // Lock the WritableBitmap to access the BackBuffer
                 writableBitmap.Lock();
 
                 IntPtr ptr = writableBitmap.BackBuffer;
+                // Only on load image
 
                 // Unlock after getting the pointer (keeps the image data in memory)
                 writableBitmap.Unlock();
