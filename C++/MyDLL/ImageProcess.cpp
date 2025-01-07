@@ -569,7 +569,10 @@ double matchFourierDescriptorsSSE2(double* refFDs, double* candFDs, int numFDs) 
 
 // Function to draw a red box around a region
 void drawRedBoxSSE2(unsigned char* rgbImage, int width, int height, int channels, int stride, int x, int y, int boxWidth, int boxHeight) {
-    __m128i red = _mm_set_epi8(255, 0, 0, 255, 0, 0, 255, 0, 255, 0, 0, 255, 0, 0, 255, 0);
+    __m128i red = _mm_set_epi8(
+        255, 0, 0, 255, 0, 0, 255, 0, // Second pixel
+        0, 0, 255, 0, 0, 255, 0, 0  // First pixel
+    );;
 
     for (int i = 0; i < boxWidth; i++) {
         if (x + i >= 0 && x + i < width) {
@@ -626,30 +629,29 @@ unsigned char* initializeRGBImage(unsigned char* binaryData, int width, int heig
 }
 
 // Main function to find the reference marker in the image
-unsigned char* findReferenceMarker(unsigned char* refData, int refWidth, int refHeight, int refChannels, int refStride,
+unsigned char* findReferenceMarker(unsigned char* markData, int markWidth, int markHeight, int markChannels, int markStride,
     unsigned char* currData, int currWidth, int currHeight, int currChannels, int currStride) {
 
-    int rgbRefStride = (refWidth * 3 + 3) & ~3; // Stride for the RGB image
-    unsigned char* refRGB = refData;
-    // Allocate memory for the RGB image
-    if (refChannels == 1)
-    {
-        refRGB = initializeRGBImage(refData, refWidth, refHeight, refStride);
+    // Prepare RGB image for drawing (if grayscale)
+    int rgbStride = (currWidth * 3 + 3) & ~3;
+    unsigned char* refRGB = currData;
+    if (currChannels == 1) {
+        refRGB = initializeRGBImage(currData, currWidth, currHeight, currStride);
     }
 
-    // Extract reference contours
-    Point refContour[MAX_POINTS];
-    int refContourSize = extractContoursSSE2(refData, refWidth, refHeight, refStride, refContour, MAX_POINTS);
+    // Extract template contours
+    Point markContour[MAX_POINTS];
+    int markContourSize = extractContoursSSE2(markData, markWidth, markHeight, markStride, markContour, MAX_POINTS);
 
-    // Compute Fourier Descriptors for the reference
-    double refFDs[MAX_POINTS];
-    computeFourierDescriptorsSSE2(refContour, refContourSize, refFDs);
+    // Compute Fourier Descriptors for the template
+    double markFDs[MAX_POINTS];
+    computeFourierDescriptorsSSE2(markContour, markContourSize, markFDs);
 
-    // Extract candidate contours
+    // Extract candidate contours from reference image
     Point candContour[MAX_POINTS];
     int candContourSize = extractContoursSSE2(currData, currWidth, currHeight, currStride, candContour, MAX_POINTS);
 
-    // Match the reference with candidates
+    // Match the template with candidates
     double bestMatch = 1e9;
     int bestX = 0, bestY = 0;
 
@@ -657,16 +659,17 @@ unsigned char* findReferenceMarker(unsigned char* refData, int refWidth, int ref
         double candFDs[MAX_POINTS];
         computeFourierDescriptorsSSE2(candContour, candContourSize, candFDs);
 
-        double match = matchFourierDescriptorsSSE2(refFDs, candFDs, refContourSize);
+        double match = matchFourierDescriptorsSSE2(markFDs, candFDs, markContourSize);
         if (match < bestMatch) {
             bestMatch = match;
             bestX = candContour[i].x;
             bestY = candContour[i].y;
         }
     }
-
-    // Draw a red box on the best match
-    // drawRedBox(refRGB, refWidth, refHeight, 3, rgbRefStride, bestX - 10, bestY - 10, 20, 20);
+    // x: bestX - markWidth / 2
+    // y: bestY - markHeight / 2
+    // Draw a red box around the best match
+    drawRedBoxSSE2(refRGB, currWidth, currHeight, 3, rgbStride, 100, 100, markWidth, markHeight);
 
     return refRGB;
 }

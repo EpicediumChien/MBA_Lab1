@@ -207,9 +207,7 @@ namespace MyImageCompareApp
             if (LoadedReference.Source != null && LoadedMark.Source != null)
             {
                 IntPtr markImagePtr = GetIntPtrFromImageSource(LoadedMark.Source, ref markWidth, ref markHeight);
-                markImagePtr = TransferBinarizeImage(markImagePtr, markWidth, markHeight, markChannels);
                 IntPtr refImagePtr = GetIntPtrFromImageSource(LoadedReference.Source, ref refWidth, ref refHeight);
-                refImagePtr = TransferBinarizeImage(refImagePtr, refWidth, refHeight, refChannels);
                 IntPtr markResult = FindReferenceMarker(markImagePtr, markWidth, markHeight, markChannels, (markWidth * markChannels + 3) & ~3,
                     refImagePtr, refWidth, refHeight, refChannels, (refWidth * refChannels + 3) & ~3);
 
@@ -227,9 +225,7 @@ namespace MyImageCompareApp
             if (LoadedImage.Source != null && LoadedReference.Source != null && LoadedMark.Source != null)
             {
                 IntPtr sourceImagePtr = GetIntPtrFromImageSource(LoadedImage.Source, ref loadWidth, ref loadHeight);
-                if (loadChannels != 1) sourceImagePtr = TransferBinarizeImage(sourceImagePtr, loadWidth, loadHeight);
                 IntPtr targetImagePtr = GetIntPtrFromImageSource(LoadedReference.Source, ref refWidth, ref refHeight);
-                if (refChannels != 1) targetImagePtr = TransferBinarizeImage(targetImagePtr, refWidth, refHeight);
                 float similarity = CompareImagesWithFourierDescriptors(sourceImagePtr, loadWidth, loadHeight, targetImagePtr, refWidth, refHeight);
                 MessageBox.Show($"The similarity is: {similarity}");
             }
@@ -261,6 +257,14 @@ namespace MyImageCompareApp
 
             try
             {
+                if (channel != 1)
+                {
+                    int expectedSize = ((width * 3 + 3) & ~3) * height;
+                    if (imageData.Length != expectedSize)
+                    {
+                        throw new InvalidOperationException("Mismatch between allocated size and expected size.");
+                    }
+                }
                 Marshal.Copy(imgSource, imageData, 0, imageData.Length);
 
                 BitmapSource bitmap = BitmapSource.Create(
@@ -273,6 +277,7 @@ namespace MyImageCompareApp
                     imageData,
                     adjustedStride);
 
+                targetImage.Source = null;
                 targetImage.Source = bitmap;
             }
             catch (Exception ex)
