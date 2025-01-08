@@ -100,9 +100,10 @@ if nimage_dll.LoadImage(nimage_instance, filename):
         processed_image_data = np.array(processed_array, dtype=np.uint8)
 
         # Reshape the array to match the image dimensions
-        processed_image = processed_image_data.reshape((height, row_size_with_padding, 3))[:, :width * 3]
+        processed_image = processed_image_data.reshape((height, row_size_with_padding))[:, :width * 3]
 
         # Convert to a PIL image for saving
+        processed_image = processed_image.reshape((height, width, 3))  # Remove padding, reshape to (H, W, 3)
         pil_image = Image.fromarray(processed_image, 'RGB')  # Create PIL image in RGB mode
         img_path = "../Imgs/test.bmp"
         pil_image.save(img_path)
@@ -116,4 +117,6 @@ if nimage_dll.LoadImage(nimage_instance, filename):
         # Free the memory allocated for the processed image
         nimage_dll.FreeProcessedImage(processedImagePtr)
         print("Processed image saved successfully.")
+
+
 
