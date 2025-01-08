@@ -100,6 +100,10 @@ namespace MyImageCompareApp
             {
                 tempFilePath = openFileDialog.FileName;
             }
+            else
+            {
+                return;
+            }
             #endregion
 
             #region LoadImage
@@ -139,6 +143,10 @@ namespace MyImageCompareApp
             {
                 tempFilePath = openFileDialog.FileName;
             }
+            else
+            {
+                return;
+            }
             #endregion
 
             #region LoadImage
@@ -177,6 +185,10 @@ namespace MyImageCompareApp
             if (openFileDialog.ShowDialog() == true)
             {
                 tempFilePath = openFileDialog.FileName;
+            }
+            else
+            {
+                return;
             }
             #endregion
 

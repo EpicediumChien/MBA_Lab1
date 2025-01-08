@@ -1,10 +1,12 @@
 // ImageProcess.cpp
+#include "MyAssignment2.h"
 #include "ImageProcess.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <emmintrin.h> // For SSE2 intrinsics
+#include <intrin.h>
 
 #define M_PI 3.14159265358979323846 // Define M_PI manually if not available
 #define MAX_GRAY_LEVELS 256
@@ -462,43 +464,49 @@ static inline __m128d simd_sin(__m128d x) {
     return _mm_loadu_pd(values); // Pack the results back into an SIMD register
 }
 
+int countTrailingZeros(unsigned int mask) {
+    unsigned long index; // MSVC requires `unsigned long` for the index
+    if (_BitScanForward(&index, mask)) {
+        return (int)index; // Return the position of the first set bit
+    }
+    return 32; // If `mask` is 0, return 32 (no set bit found)
+}
+
 // Function to extract contours from a binary image
-int extractContoursSSE2(unsigned char* data, int width, int height, int stride, Point* contours, int maxContours) {
+int extractContoursSIMD(unsigned char* data, int width, int height, int stride, Point* contours, int maxContours) {
     int numContours = 0;
 
     for (int y = 1; y < height - 1; y++) {
-        for (int x = 1; x < width - 1; x += 16) { // Process 16 pixels at a time
-            // Load 16 pixels
+        for (int x = 1; x < width - 1; x += 16) {
             __m128i pixels = _mm_loadu_si128((__m128i*) & data[y * stride + x]);
-
-            // Compare pixels to 255 (white pixel)
             __m128i whiteMask = _mm_cmpeq_epi8(pixels, _mm_set1_epi8(255));
 
-            // Extract comparison results into a bit mask
             int mask = _mm_movemask_epi8(whiteMask);
+            while (mask && numContours < maxContours) {
+                int offset = countTrailingZeros(mask); // Use MSVC-compatible function
+                int px = x + offset;
 
-            // Check each bit in the mask
-            for (int bit = 0; bit < 16; bit++) {
-                if ((mask & (1 << bit)) != 0 && numContours < maxContours) {
-                    int posX = x + bit;
-
-                    // Check neighbors for boundary
-                    int isBoundary = 0;
-                    for (int dy = -1; dy <= 1 && !isBoundary; dy++) {
-                        for (int dx = -1; dx <= 1 && !isBoundary; dx++) {
-                            int neighborIndex = (y + dy) * stride + (posX + dx);
-                            if (data[neighborIndex] == 0) { // Black neighbor
-                                isBoundary = 1;
-                            }
+                // Check neighbors (simplified boundary check)
+                int isBoundary = 0;
+                for (int dy = -1; dy <= 1 && !isBoundary; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (dx == 0 && dy == 0) continue;
+                        int nx = px + dx;
+                        int ny = y + dy;
+                        if (data[ny * stride + nx] == 0) {
+                            isBoundary = 1;
+                            break;
                         }
                     }
-
-                    if (isBoundary) {
-                        contours[numContours].x = posX;
-                        contours[numContours].y = y;
-                        numContours++;
-                    }
                 }
+
+                if (isBoundary) {
+                    Point point;      // Create a temporary Point
+                    point.x = px;
+                    point.y = y;
+                    contours[numContours++] = point; // Assign to contours
+                }
+                mask &= mask - 1; // Clear the first set bit
             }
         }
     }
@@ -507,11 +515,11 @@ int extractContoursSSE2(unsigned char* data, int width, int height, int stride, 
 }
 
 // Function to compute Fourier Descriptors (FDs)
-void computeFourierDescriptorsSSE2(Point* points, int numPoints, double* FDs) {
+void computeFourierDescriptorsOptimized(Point* points, int numPoints, double* FDs) {
     __m128d sumCx = _mm_setzero_pd();
     __m128d sumCy = _mm_setzero_pd();
 
-    // Compute centroid (cx, cy)
+    // Compute centroid using SIMD
     for (int i = 0; i < numPoints; i += 2) {
         __m128d px = _mm_set_pd(points[i + 1].x, points[i].x);
         __m128d py = _mm_set_pd(points[i + 1].y, points[i].y);
@@ -525,7 +533,6 @@ void computeFourierDescriptorsSSE2(Point* points, int numPoints, double* FDs) {
     cx[0] = (cx[0] + cx[1]) / numPoints;
     cy[0] = (cy[0] + cy[1]) / numPoints;
 
-    // Compute Fourier Descriptors
     for (int u = 0; u < numPoints; u++) {
         __m128d realPart = _mm_setzero_pd();
         __m128d imagPart = _mm_setzero_pd();
@@ -632,44 +639,81 @@ unsigned char* initializeRGBImage(unsigned char* binaryData, int width, int heig
 unsigned char* findReferenceMarker(unsigned char* markData, int markWidth, int markHeight, int markChannels, int markStride,
     unsigned char* currData, int currWidth, int currHeight, int currChannels, int currStride) {
 
-    // Prepare RGB image for drawing (if grayscale)
-    int rgbStride = (currWidth * 3 + 3) & ~3;
-    unsigned char* refRGB = currData;
-    if (currChannels == 1) {
-        refRGB = initializeRGBImage(currData, currWidth, currHeight, currStride);
+    // Binarize the template and reference images
+    unsigned char* biMarkData = TransferBinarizeImage(markData, markWidth, markHeight, markChannels);
+    unsigned char* biCurrData = TransferBinarizeImage(currData, currWidth, currHeight, currChannels);
+
+    // Prepare the reference image for drawing (convert to RGB if grayscale)
+    int rgbStride = (currWidth * 3 + 3) & ~3; // Align stride for RGB
+    unsigned char* refRGB = (currChannels == 1) ? initializeRGBImage(biCurrData, currWidth, currHeight, currStride) : biCurrData;
+
+    // Extract template contour
+    Point markContour[MAX_POINTS];
+    int markContourSize = extractContoursSIMD(biMarkData, markWidth, markHeight, markStride, markContour, MAX_POINTS);
+    if (markContourSize == 0) {
+        fprintf(stderr, "Error: No contours found in the template.\n");
+        return refRGB;
     }
 
-    // Extract template contours
-    Point markContour[MAX_POINTS];
-    int markContourSize = extractContoursSSE2(markData, markWidth, markHeight, markStride, markContour, MAX_POINTS);
-
-    // Compute Fourier Descriptors for the template
+    // Compute Fourier descriptors for the template contour
     double markFDs[MAX_POINTS];
-    computeFourierDescriptorsSSE2(markContour, markContourSize, markFDs);
+    computeFourierDescriptorsOptimized(markContour, markContourSize, markFDs);
 
-    // Extract candidate contours from reference image
+    // Extract candidate contours from the reference image
     Point candContour[MAX_POINTS];
-    int candContourSize = extractContoursSSE2(currData, currWidth, currHeight, currStride, candContour, MAX_POINTS);
+    int candContourSize = extractContoursSIMD(biCurrData, currWidth, currHeight, currStride, candContour, MAX_POINTS);
+    if (candContourSize == 0) {
+        fprintf(stderr, "Error: No contours found in the reference image.\n");
+        return refRGB;
+    }
 
-    // Match the template with candidates
+    // Match template contour with candidate contours
     double bestMatch = 1e9;
-    int bestX = 0, bestY = 0;
-
+    int bestIndex = -1;
     for (int i = 0; i < candContourSize; i++) {
         double candFDs[MAX_POINTS];
-        computeFourierDescriptorsSSE2(candContour, candContourSize, candFDs);
+        computeFourierDescriptorsOptimized(&candContour[i], candContourSize, candFDs);
 
-        double match = matchFourierDescriptorsSSE2(markFDs, candFDs, markContourSize);
-        if (match < bestMatch) {
-            bestMatch = match;
-            bestX = candContour[i].x;
-            bestY = candContour[i].y;
+        double matchScore = matchFourierDescriptorsSSE2(markFDs, candFDs, markContourSize);
+        if (matchScore < bestMatch) {
+            bestMatch = matchScore;
+            bestIndex = i;
         }
     }
-    // x: bestX - markWidth / 2
-    // y: bestY - markHeight / 2
-    // Draw a red box around the best match
-    drawRedBoxSSE2(refRGB, currWidth, currHeight, 3, rgbStride, 100, 100, markWidth, markHeight);
+
+    // Check if a match was found
+    if (bestIndex != -1) {
+        // Draw a bounding box around the best-matched contour
+        Point* bestContour = &candContour[bestIndex];
+
+        // Initialize min and max coordinates
+        int minX = currWidth, maxX = 0;
+        int minY = currHeight, maxY = 0;
+
+        // Iterate through the points in the contour
+        for (int i = 0; i < candContourSize; i++) {
+            if (bestContour[i].x < minX) minX = bestContour[i].x;
+            if (bestContour[i].x > maxX) maxX = bestContour[i].x;
+            if (bestContour[i].y < minY) minY = bestContour[i].y;
+            if (bestContour[i].y > maxY) maxY = bestContour[i].y;
+        }
+
+        // Check if min/max values are valid
+        if (minX < 0 || minY < 0 || maxX >= currWidth || maxY >= currHeight) {
+            fprintf(stderr, "Error: Invalid bounding box coordinates.\n");
+            return refRGB;
+        }
+
+        // Calculate width and height of the bounding box
+        int boxWidth = maxX - minX + 1;
+        int boxHeight = maxY - minY + 1;
+
+        // Draw the bounding box
+        drawRedBoxSSE2(refRGB, currWidth, currHeight, 3, rgbStride, minX, minY, boxWidth, boxHeight);
+    }
+    else {
+        fprintf(stderr, "Error: No matching contour found in the reference image.\n");
+    }
 
     return refRGB;
 }

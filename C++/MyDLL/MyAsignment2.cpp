@@ -20,6 +20,12 @@ unsigned char* BinarizeImage(unsigned char* data, int width, int height, int cha
     return binaryImage;
 }
 
+unsigned char* TransferBinarizeImage(unsigned char* data, int width, int height, int channels)
+{
+    int threshold = 128;
+    return BinarizeImage(data, width, height, channels, threshold);
+}
+
 // Static helper function for depth-first search (DFS) to find connected components and calculate area and perimeter
 static void dfs(int x, int y, int width, int height, unsigned char* binaryImage, unsigned char* visited, int* area, int* perimeter, int stride, unsigned char* rgbImage, float* centerX, float* centerY, float* diameter) {
     int rgbStride = (width * 3 + 3) & ~3; // Stride for the RGB image
