@@ -29,9 +29,6 @@
     <ClCompile Include="MyDLL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MyAsignment2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImageProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

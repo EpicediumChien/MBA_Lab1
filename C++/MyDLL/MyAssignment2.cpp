@@ -113,6 +113,11 @@ ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int ch
     unsigned char* rgbImage = (unsigned char*)calloc(height, rgbStride);
 
     ObjectData* objects = (ObjectData*)malloc(sizeof(ObjectData) * width * height);
+    if (!objects) {
+        free(binaryImage);
+        free(rgbImage);
+        return nullptr;
+    }
     int currentIndex = 0;
 
     // Initialize the RGB image (copy binary image to grayscale in RGB)
@@ -150,7 +155,7 @@ ObjectData* ProcessImage_Asm2(unsigned char* data, int width, int height, int ch
     objects = (ObjectData*)realloc(objects, sizeof(ObjectData) * currentIndex);
 
     free(visited);
-
+    free(binaryImage);
     return objects;
 }
 

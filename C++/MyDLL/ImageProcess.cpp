@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <emmintrin.h> // For SSE2 intrinsics
-#include <intrin.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 // Define M_PI manually if not available

@@ -212,8 +212,8 @@ unsigned char* findReferenceMarker(unsigned char* markData, int markWidth, int m
     unsigned char* currData, int currWidth, int currHeight, int currChannels, int currStride) {
 
     // Binarize the template and reference images
-    unsigned char* biMarkData = TransferBinarizeImage(markData, markWidth, markHeight, markChannels);
-    unsigned char* biCurrData = TransferBinarizeImage(currData, currWidth, currHeight, currChannels);
+    unsigned char* biMarkData = BinarizeImage(markData, markWidth, markHeight, markChannels, 128);
+    unsigned char* biCurrData = BinarizeImage(currData, currWidth, currHeight, currChannels, 128);
 
     // Prepare the reference image for drawing (convert to RGB if grayscale)
     int rgbStride = (currWidth * 3 + 3) & ~3; // Align stride for RGB
