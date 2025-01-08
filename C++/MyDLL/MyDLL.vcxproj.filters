@@ -41,5 +41,8 @@
     <ClCompile Include="FinalImageProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyAssignment2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

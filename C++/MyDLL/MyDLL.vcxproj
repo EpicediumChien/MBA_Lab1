@@ -28,6 +28,7 @@
     <ClCompile Include="FinalImageProcess.h" />
     <ClCompile Include="ImageProcess.cpp" />
     <ClCompile Include="MyAsignment2.cpp" />
+    <ClCompile Include="MyAssignment2.cpp" />
     <ClCompile Include="MyDLL.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
