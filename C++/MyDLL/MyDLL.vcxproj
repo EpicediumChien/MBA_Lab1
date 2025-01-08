@@ -24,6 +24,8 @@
     <ClInclude Include="MyDLL.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FinalImageProcess.cpp" />
+    <ClCompile Include="FinalImageProcess.h" />
     <ClCompile Include="ImageProcess.cpp" />
     <ClCompile Include="MyAsignment2.cpp" />
     <ClCompile Include="MyDLL.cpp" />

@@ -35,5 +35,11 @@
     <ClCompile Include="ImageProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FinalImageProcess.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FinalImageProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
