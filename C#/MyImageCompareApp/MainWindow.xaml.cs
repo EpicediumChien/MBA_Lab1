@@ -78,7 +78,7 @@ namespace MyImageCompareApp
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr FindReferenceMarker(IntPtr markImage, int markWidth, int markHeight, int markChannel, int markStride,
-                                                IntPtr refImage, int refWidth, int refHeight, int refChannel, int refStride);
+                                                IntPtr refImage, int refWidth, int refHeight, int refChannel, int refStride, out IntPtr biMarkPtr);
 
         public MainWindow()
         {
@@ -218,12 +218,13 @@ namespace MyImageCompareApp
         {
             if (LoadedReference.Source != null && LoadedMark.Source != null)
             {
+                IntPtr biMarkPtr;
                 IntPtr markImagePtr = GetIntPtrFromImageSource(LoadedMark.Source, ref markWidth, ref markHeight);
                 IntPtr refImagePtr = GetIntPtrFromImageSource(LoadedReference.Source, ref refWidth, ref refHeight);
                 IntPtr markResult = FindReferenceMarker(markImagePtr, markWidth, markHeight, markChannels, (markWidth * markChannels + 3) & ~3,
-                    refImagePtr, refWidth, refHeight, refChannels, (refWidth * refChannels + 3) & ~3);
+                    refImagePtr, refWidth, refHeight, refChannels, (refWidth * refChannels + 3) & ~3, out biMarkPtr);
 
-                ShowIntPtrOnImage(LoadedMark, markImagePtr, markWidth, markHeight, markChannels);
+                ShowIntPtrOnImage(LoadedMark, biMarkPtr, markWidth, markHeight, markChannels);
                 ShowIntPtrOnImage(LoadedReference, markResult, refWidth, refHeight, 3);
             }
             else

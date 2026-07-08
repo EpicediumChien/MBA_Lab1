@@ -1,62 +1,20 @@
-// Updated ImageProcess.h
 #pragma once
 
+#ifndef DLL_EXPORT
 #ifdef _WIN32
 #define DLL_EXPORT __declspec(dllexport)
 #else
 #define DLL_EXPORT __attribute__((visibility("default")))
 #endif
-
-#include <stdint.h>
-
-// BMP file headers
-#pragma pack(push, 1)
-typedef struct {
-    uint16_t fileType;
-    uint32_t fileSize;
-    uint16_t reserved1;
-    uint16_t reserved2;
-    uint32_t offsetData;
-} BMPHeader;
-
-typedef struct {
-    uint32_t size;
-    int32_t width;
-    int32_t height;
-    uint16_t planes;
-    uint16_t bitCount;
-    uint32_t compression;
-    uint32_t sizeImage;
-    int32_t xPelsPerMeter;
-    int32_t yPelsPerMeter;
-    uint32_t clrUsed;
-    uint32_t clrImportant;
-} BMPInfoHeader;
-#pragma pack(pop)
-
-// NImage class for handling BMP images
-typedef struct {
-    int width;
-    int height;
-    int channels;
-    unsigned char* data;
-    unsigned char* palette;
-} NImage;
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    // Image management
-    DLL_EXPORT NImage* CreateNImage();
-    DLL_EXPORT void DeleteNImage(NImage* image);
-    DLL_EXPORT int LoadImage(NImage* image, const char* filename);
-    DLL_EXPORT int SaveImage(NImage* image, const char* filename);
 
-    // Image metadata access
-    DLL_EXPORT int GetWidth(const NImage* image);
-    DLL_EXPORT int GetHeight(const NImage* image);
-    DLL_EXPORT int GetChannels(const NImage* image);
-    DLL_EXPORT const unsigned char* GetData(const NImage* image);
+DLL_EXPORT unsigned char* FindReferenceMarker(unsigned char* refData, int refWidth, int refHeight, int refChannels, int refStride,
+                                              unsigned char* currData, int currWidth, int currHeight, int currChannels, int currStride);
+
 #ifdef __cplusplus
 }
 #endif
